@@ -1,20 +1,29 @@
 # HCA-uncovers-metastable-phenotypes-in-hEC-monolayers
 
-Repository for "High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations".
+This repository contains the scripts used in the paper "High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations" for: 
 
-All code needed to reproduce the Shiny App for interactive data visualisation can be found in the project "Shiny App V1.2"
+- "Shiny App V1.2" contains the R scripts to reproduce the Shiny Application for interactive data selection 
+ used to subset the database after tSNE clustering 
+ 
+-"SLAS2_Stats_Notebook.Rmd" is an R notebook containing the scripts for reduction analysis and statistical analysis 
+
+- "SLAS2 NotebookD1R3_4.Rmd" contains the R scripts for data visualisation
+
+- Can also use this for pipeline upload stuff 
+
+# Requirements: 
+1. R and R studio Version 4.0.2. was used and is required for script useage 
+2. Install CellProfiler? 
+
+# Useage: 
+- All scripts are written to run with the raw dataset, which can be found in the 'data' folder as 'XXX'
+-
 
 short description of your software
 
 build/usage requirements for your process
 
 installation instructions (and point to another file INSTALL.md for more details)
-
-quickstart section
-Link to code for Shiny App: 
-Link to code for Plots: 
-Link to code for reduction analysis: 
-Link to code for statistical analysis: 
 
 link to usage examples
 
