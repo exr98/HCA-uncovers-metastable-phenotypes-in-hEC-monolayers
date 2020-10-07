@@ -15,6 +15,9 @@ This repository contains the scripts used in the paper ["High Content Analysis u
 Endothelial Cell Profiling Tool (ECPT) expands on pervious work (which can be found [here](https://journals.sagepub.com/doi/10.1177/2472555218820848))
 ### Requirements: 
 
+### Useage: 
+For a detailed description and step-by-step walk through of carrying out analysis using ECPT, refer to the [supplementary methods section](Link to appendix).   
+
 ## Shiny App
 ### Requirements: 
 1. R and R studio Version 4.0.2. was used and is required for script useage 
@@ -36,10 +39,11 @@ link to usage examples
 link to your paper about the project
 Our publication can be found at: TBC 
 
-list of developers
-Developers:
-Lorenzo Veschini
+## Authors:
+Francois Chesnais
+Juliette Le Caillec
 Errin Roy 
+Davide Danovi
+Lorenzo Veschini
 
-optionally: how users can get support (i.e. a mailing list)
-For support please contact Lorenzo Veschini at lorenzo.1.veschini@kcl.ac.uk 
+## For support please contact Lorenzo Veschini at lorenzo.1.veschini@kcl.ac.uk 
