@@ -12,15 +12,15 @@ This repository contains the scripts used in the paper ["High Content Analysis u
 - Can also use this for pipeline upload stuff 
 
 ## ECPT
-Endothelial Cell Profiling Tool (ECPT) expands on pervious work (which can be found [here](https://journals.sagepub.com/doi/10.1177/2472555218820848)) and provides a 
-high content analysis platform to characterise single EC within an endothelial monolayer capturing context features, cell features and subcellular features including IEJ. This unbiased approach allows to quantify EC diversity and feature variance.
+Endothelial Cell Profiling Tool (ECPT) expands on [previous work](https://journals.sagepub.com/doi/10.1177/2472555218820848) and provides a 
+high content analysis platform to characterise single endothelial cells (EC) within an endothelial monolayer capturing context features, cell features and subcellular features including Inter-endothelial adherens junctions (IEJ). This unbiased approach allows to quantify EC diversity and feature variance.
 
 Key improvements of the new workflow include:
 1) The ability to phenotype widely heterogeneous EC without user input 
 2) The reporting of single cell measurements  
 3) The ability to perform correlative analysis between the different parameters (at single cell level)
 
-The [ECPT])incl. link to folder) folder contains the code required to set up this analysis using X.
+The [ECPT](incl. link to folder) folder contains the code required to set up this analysis using X.
 
 ### Requirements: 
 1. Install [CellProfiler](https://cellprofiler.org/releases)
@@ -33,10 +33,11 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ## Shiny App
 
-
 ### Requirements: 
-1. R and R studio Version 4.0.2. was used and is required for script useage 
-2. Install CellProfiler? 
+1. Install [R](https://www.r-project.org/) and [R studio](https://rstudio.com/products/rstudio/download/)
+   - Note: Version 4.0.2. was used to develop this application and this version or above is required for useage 
+2. Install the required R packages 
+   - A download prompt should appear after loading the ShinyApp.Rproj in R Studio
 
 ### Useage: 
 - Open the 'Server.R' and 'UI.R' files stored within the R proj.
@@ -59,6 +60,7 @@ The R notebooks used to create all plots in the paper and carry out all statisti
 ### Requirements and useage: 
 
 Before you can run the notebooks ensure you have the following installed: 
+- R and R studio
 
 
 ## Authors:
