@@ -25,19 +25,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ### Useage: 
 - All scripts are written to run with the raw dataset, which can be found in the 'data' folder as 'XXX'
--
-
-For a detailed description of how to use the software, refer to the supplimentary methods section which can be found here: Inlcude link to methods
-short description of your software
-
-build/usage requirements for your process
-
-installation instructions (and point to another file INSTALL.md for more details)
-
-link to usage examples
-
-link to your paper about the project
-Our publication can be found at: TBC 
+ 
 
 ## Authors:
 Francois Chesnais(1), Juliette Le Caillec(1), Errin Roy(2), Davide Danovi(2), Lorenzo Veschini(1) 
