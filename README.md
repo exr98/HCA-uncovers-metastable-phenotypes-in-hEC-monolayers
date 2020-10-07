@@ -40,10 +40,15 @@ link to your paper about the project
 Our publication can be found at: TBC 
 
 ## Authors:
-Francois Chesnais
-Juliette Le Caillec
-Errin Roy 
-Davide Danovi
-Lorenzo Veschini
+Francois Chesnais(1), Juliette Le Caillec(1), Errin Roy(2), Davide Danovi(2), Lorenzo Veschini(1) 
 
-## For support please contact Lorenzo Veschini at lorenzo.1.veschini@kcl.ac.uk 
+(1) Vascular Cells Dynamics Lab, ACRS, Centre of Oral, Clinical and Translational Sciences, King’s College London. 
+
+(2) Stem Cell Hotel, Centre for Stem Cells & Regenerative Medicine, King’s College London 
+
+## For support please contact:
+Lorenzo Veschini at lorenzo.1.veschini@kcl.ac.uk 
+
+## Copy right and License Information: 
+
+This software is licensed with GNU General Public License v3.0. Please see the attached [LICENSE](https://github.com/exr98/HCA-uncovers-metastable-phenotypes-in-hEC-monolayers/blob/main/LICENSE) file for details.
