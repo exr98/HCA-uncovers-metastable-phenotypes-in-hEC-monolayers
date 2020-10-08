@@ -20,7 +20,7 @@ Key improvements of the new workflow include:
 2) The reporting of single cell measurements  
 3) The ability to perform correlative analysis between the different parameters (at single cell level)
 
-The [ECPT](incl. link to folder) folder contains the code required to set up this analysis using X.
+
 
 ### Requirements: 
 1. Install [CellProfiler](https://cellprofiler.org/releases)
