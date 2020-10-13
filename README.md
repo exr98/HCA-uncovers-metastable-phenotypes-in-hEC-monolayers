@@ -44,7 +44,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
    - Note: Version 4.0.2. was used to develop this application and this version or above is required for useage 
 2. Install the required R packages 
    - A download prompt should appear after loading the ShinyApp.Rproj in R Studio
-     - Otherwise paste the code `<install.packages("XXX")>` into the console and hit enter, this should download all necessary packages. 
+     - Otherwise paste the code `<install.packages(c("dplyr", "tidyverse", "ggplot2", "leaflet", "leaflet.extras", "plotly", "DT", "shiny", "ggiraph", "js", "shinyjs", "maps", "car", "ggpmisc", "MASS", "scales", "viridis", "RSQLite", "htmltools", "shinyjs", "readr", "shinythemes"))>` into the console and hit enter, this should download all necessary packages. 
      ###### Note:
      The package installation process may take a few minutes. 
 
