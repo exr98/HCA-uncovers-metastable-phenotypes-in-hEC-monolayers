@@ -59,6 +59,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
     - To: 
       - `<#Master <- read.csv("data/SLAS2_Master_110920.csv") #Main full dataset>`                        
       - `<Master <- read.csv("data/SLAS2_Master_110920Test.csv") #Smaller test dataset>` 
+     
      To load the test dataset. This dataset allows for an improved interactive experience and can be used to simply test the user experience of the Shiny App without the need to load the full dataset used for analysis
 - To open the Shiny App from within R studio, click the 'Run App' button that appears at the top right hand corner of either the Server.R or UI.R file
   - This will prompt a pop out window with the Shiny App
