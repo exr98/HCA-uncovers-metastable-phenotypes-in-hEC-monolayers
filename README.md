@@ -1,15 +1,17 @@
 # HCA-uncovers-metastable-phenotypes-in-hEC-monolayers
 
-This repository contains the scripts used in the paper ["High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations"](incl. link to paper) for: 
+This repository contains the scripts used in the paper ["High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations"](incl. link to paper): 
 
-- "ECPT" (Endothelial Cell Profiling Tool) contains 
+- "ECPT" (Endothelial Cell Profiling Tool) contains the cell profiler pipeline to carry out endothelial cell characterisation
 
 - "Shiny App V1.2" contains the raw data .csv file and R scripts to reproduce the Shiny Application for interactive data selection 
  used to subset the data after tSNE clustering 
  
-- "SLAS2_Stats_Notebook.Rmd" is an R notebook containing the scripts for reduction analysis and statistical analysis 
+- "SLAS2_Stats_Notebook.Rmd" contains the scripts for statistical analysis 
 
-- "SLAS2 NotebookD1R3_4.Rmd" contains the R scripts for data visualisation
+- "SLAS2 NotebookD1R3_4.Rmd" contains the scripts for generation of plots and data visualisation
+
+- "Servive Notebook.Rmd" contains the scripts for database cleaning and dimensionality reduction 
 
 &nbsp;
 
@@ -37,7 +39,7 @@ All software required for this pipeline is open source and available for downloa
 For a detailed description and step-by-step walk through of carrying out analysis using ECPT, refer to the [supplementary methods section](Link to appendix).   
 
 &nbsp;
-&nbsp;
+
 
 
 ## Shiny App
