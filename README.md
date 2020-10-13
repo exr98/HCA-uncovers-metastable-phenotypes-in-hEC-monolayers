@@ -68,7 +68,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
 ##### Running/Closing the Shiny App:
 - To open the Shiny App from within R studio, click the 'Run App' button that appears at the top right hand corner of either the Server.R or UI.R file
   - This will prompt a pop out window with the Shiny App
-**If an error is displayed, close the window and double check that all packages have been loaded and the .csv data file is in the data folder**
+  - _**If an error is displayed, close the window and double check that all packages have been loaded and the .csv data file is in the data folder**_
 
 - To close the Shiny App, simply close the pop up window or click the red stop button in the right hand corner of the console
 
