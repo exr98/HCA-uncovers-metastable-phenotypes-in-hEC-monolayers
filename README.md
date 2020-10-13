@@ -2,14 +2,15 @@
 
 This repository contains the scripts used in the paper ["High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations"](incl. link to paper) for: 
 
-- "Shiny App V1.2" contains the R scripts to reproduce the Shiny Application for interactive data selection 
- used to subset the database after tSNE clustering 
+- "ECPT" (Endothelial Cell Profiling Tool) contains 
+
+- "Shiny App V1.2" contains the raw data .csv file and R scripts to reproduce the Shiny Application for interactive data selection 
+ used to subset the data after tSNE clustering 
  
 - "SLAS2_Stats_Notebook.Rmd" is an R notebook containing the scripts for reduction analysis and statistical analysis 
 
 - "SLAS2 NotebookD1R3_4.Rmd" contains the R scripts for data visualisation
 
-- Can also use this for pipeline upload stuff 
 
 ## ECPT
 Endothelial Cell Profiling Tool (ECPT) expands on [previous work](https://journals.sagepub.com/doi/10.1177/2472555218820848) and provides a 
@@ -23,7 +24,11 @@ Key improvements of the new workflow include:
 
 
 ### Requirements: 
-1. Install [CellProfiler](https://cellprofiler.org/releases)
+1. Install [Fiji/ImageJ](https://imagej.net/Fiji/Downloads)
+   - Insure [Trainable WEKA Segmentation](https://imagej.net/Trainable_Weka_Segmentation) is installed 
+2. Install [CellProfiler](https://cellprofiler.org/releases)
+
+All software required for this pipeline is open source and available for download via the above links. 
 
 
 ### Useage: 
@@ -39,6 +44,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
    - Note: Version 4.0.2. was used to develop this application and this version or above is required for useage 
 2. Install the required R packages 
    - A download prompt should appear after loading the ShinyApp.Rproj in R Studio
+     - Otherwise paste the code `<install.packages("XXX")>` into the console and hit enter, this should download all necessary packages. Note that this process may take a few minutes. 
 
 ### Useage: 
 - Open the 'Server.R' and 'UI.R' files stored within the R proj.
