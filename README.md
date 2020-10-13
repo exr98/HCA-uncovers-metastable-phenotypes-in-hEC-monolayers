@@ -45,14 +45,21 @@ For a detailed description and step-by-step walk through of carrying out analysi
 2. Install the required R packages 
    - A download prompt should appear after loading the ShinyApp.Rproj in R Studio
      - Otherwise paste the code `<install.packages(c("dplyr", "tidyverse", "ggplot2", "leaflet", "leaflet.extras", "plotly", "DT", "shiny", "ggiraph", "js", "shinyjs", "maps", "car", "ggpmisc", "MASS", "scales", "viridis", "RSQLite", "htmltools", "shinyjs", "readr", "shinythemes"))>` into the console and hit enter, this should download all necessary packages. 
-     ###### Note:
-     The package installation process may take a few minutes. 
+     ###### Note: The package installation process may take a few minutes. 
 
 ### Useage: 
 - Open the 'Server.R' and 'UI.R' files stored within the R proj.
 - In the Server.R file, load all libraries at the start of the R script (This can be done via Ctrl+Enter in windows or Shift+Enter for Mac or by selecting the code and hitting run in the top right hand corner) 
-- Ensure the dataset has been downloaded and is in the data folder (this should happen automatically when the "Shiny App" file is downloaded), the Master raw data file is named "XXX" 
-  - A 'test' dataset with a reduced number of data point can also be loaded by removing the # and placing it infront of the highlighted Master line, this dataset allows for improved interactive experience and can be used to simply test the user experience of the Shiny App without the need to load the full dataset used in analysis
+- Ensure the dataset has been downloaded and is in the data folder (this should happen automatically when the "Shiny App" file is downloaded), the Master raw data file is named "SLAS2_Master_110920" 
+  - A 'test' dataset ("SLAS2_Master_110920Test") with a reduced number of data points can also be loaded by removing the # infront of the code to load placing it infront of the highlighted Master line as so: 
+  orignal code to load full dataset: 
+  `<Master <- read.csv("data/SLAS2_Master_110920.csv") #Main full dataset>`
+  `<#Master <- read.csv("data/SLAS2_Master_110920Test.csv") #Smaller test dataset>` 
+  
+  To: 
+  `<#Master <- read.csv("data/SLAS2_Master_110920.csv") #Main full dataset>`
+  `<Master <- read.csv("data/SLAS2_Master_110920Test.csv") #Smaller test dataset>` 
+  To load the test dataset. This dataset allows for an improved interactive experience and can be used to simply test the user experience of the Shiny App without the need to load the full dataset used for analysis
 - To open the Shiny App from within R studio, click the 'Run App' button that appears at the top right hand corner of either the Server.R or UI.R file
   - This will prompt a pop out window with the Shiny App
 
