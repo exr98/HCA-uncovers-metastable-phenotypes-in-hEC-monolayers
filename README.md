@@ -44,7 +44,9 @@ For a detailed description and step-by-step walk through of carrying out analysi
    - Note: Version 4.0.2. was used to develop this application and this version or above is required for useage 
 2. Install the required R packages 
    - A download prompt should appear after loading the ShinyApp.Rproj in R Studio
-     - Otherwise paste the code `<install.packages("XXX")>` into the console and hit enter, this should download all necessary packages. Note that this process may take a few minutes. 
+     - Otherwise paste the code `<install.packages("XXX")>` into the console and hit enter, this should download all necessary packages. 
+     ###### Note:
+     The package installation process may take a few minutes. 
 
 ### Useage: 
 - Open the 'Server.R' and 'UI.R' files stored within the R proj.
@@ -67,7 +69,8 @@ The R notebooks used to create all plots in the paper and carry out all statisti
 ### Requirements and useage: 
 
 Before you can run the notebooks ensure you have the following installed: 
-- R and R studio
+- [R](https://www.r-project.org/) and [R studio](https://rstudio.com/products/rstudio/download/)
+   - Note: Version 4.0.2. was used at the time of writing and this version or above is required for useage 
 
 
 ## Authors:
