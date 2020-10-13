@@ -31,6 +31,7 @@ Key improvements of the new workflow include:
 1. Install [Fiji/ImageJ](https://imagej.net/Fiji/Downloads)
    - Insure [Trainable WEKA Segmentation](https://imagej.net/Trainable_Weka_Segmentation) is installed 
 2. Install [CellProfiler](https://cellprofiler.org/releases)
+   - Version 4.0.5. was used to develop this pipeline and this version or above is required for useage
 
 All software required for this pipeline is open source and available for download via the above links. 
 
