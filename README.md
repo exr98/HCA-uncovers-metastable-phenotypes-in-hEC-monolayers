@@ -12,11 +12,6 @@ This repository contains the scripts used in the paper ["High Content Analysis u
 - "SLAS2 NotebookD1R3_4.Rmd" contains the R scripts for data visualisation
 
 &nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
 
 
 ## ECPT
