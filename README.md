@@ -41,7 +41,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ### Requirements: 
 1. Install [R](https://www.r-project.org/) and [R studio](https://rstudio.com/products/rstudio/download/)
-   - Note: Version 4.0.2. was used to develop this application and this version or above is required for useage 
+   - Version 4.0.2. was used to develop this application and this version or above is required for useage 
 2. Install the required R packages 
    - A download prompt should appear after loading the ShinyApp.Rproj in R Studio
      - Otherwise paste the code `<install.packages(c("dplyr", "tidyverse", "ggplot2", "leaflet", "leaflet.extras", "plotly", "DT", "shiny", "ggiraph", "js", "shinyjs", "maps", "car", "ggpmisc", "MASS", "scales", "viridis", "RSQLite", "htmltools", "shinyjs", "readr", "shinythemes"))>` into the console and hit enter, this should download all necessary packages. 
@@ -56,7 +56,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
 - To open the Shiny App from within R studio, click the 'Run App' button that appears at the top right hand corner of either the Server.R or UI.R file
   - This will prompt a pop out window with the Shiny App
 
-- To close the Shiny App, simply close the pop up window 
+- To close the Shiny App, simply close the pop up window or click the red stop button in the right hand corner of the console
 
 ###### Note:
 - Code *cannot* run in R while the Shiny App is also running - before attempting to run code in R ensure the Shiny App window is closed or click the red stop button at the right hand corner of the console  
@@ -64,13 +64,14 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ## Data Analysis 
 
-The R notebooks used to create all plots in the paper and carry out all statistical analysis can be found here. 
+The R scripts along with the raw data used to create all plots in the paper and carry out all statistical analysis can be found in the SLAS2 notebooks. 
 
 ### Requirements and useage: 
 
-Before you can run the notebooks ensure you have the following installed: 
-- [R](https://www.r-project.org/) and [R studio](https://rstudio.com/products/rstudio/download/)
-   - Note: Version 4.0.2. was used at the time of writing and this version or above is required for useage 
+Before attempting to run the notebooks ensure: 
+- [R](https://www.r-project.org/) and [R studio](https://rstudio.com/products/rstudio/download/) are installed
+   - Version 4.0.2. was used at the time of writing and this version or above is required for useage 
+- All required packages at the top of the script are installed and loaded 
 
 
 ## Authors:
