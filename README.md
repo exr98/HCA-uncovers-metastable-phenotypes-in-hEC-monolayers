@@ -54,7 +54,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ##### Loading Data:
 - Ensure the dataset has been downloaded and is in the data folder (this should happen automatically when the "Shiny App" file is downloaded), the Master data file is named "SLAS2_Master_110920" 
-  - A 'test' dataset ("SLAS2_Master_110920Test") with a reduced number of data points can also be loaded by moving the position of the # in the section 'Load Data' like so: 
+  - A 'test' dataset ("SLAS2_Master_110920Test") with a reduced number of data points can also be loaded and allows for an improved interactive experience and can be used to simply test the user experience of the Shiny App without the need to load the full dataset used for analysis by moving the position of the # in the section 'Load Data' like so: 
     - Orignal code to load full dataset: 
       - `<Master <- read.csv("data/SLAS2_Master_110920.csv") #Main full dataset>`               
       - `<#Master <- read.csv("data/SLAS2_Master_110920Test.csv") #Smaller test dataset>` 
@@ -63,7 +63,6 @@ For a detailed description and step-by-step walk through of carrying out analysi
       - `<#Master <- read.csv("data/SLAS2_Master_110920.csv") #Main full dataset>`                        
       - `<Master <- read.csv("data/SLAS2_Master_110920Test.csv") #Smaller test dataset>` 
      
-     To load the test dataset. This dataset allows for an improved interactive experience and can be used to simply test the user experience of the Shiny App without the need to load the full dataset used for analysis
      
 ##### Running/Closing the Shiny App:
 - To open the Shiny App from within R studio, click the 'Run App' button that appears at the top right hand corner of either the Server.R or UI.R file
@@ -72,8 +71,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 - To close the Shiny App, simply close the pop up window or click the red stop button in the right hand corner of the console
 
-###### Note:
-- Code *cannot* run in R while the Shiny App is also running - before attempting to run code in R ensure the Shiny App window is closed or click the red stop button at the right hand corner of the console  
+###### Note: Code *cannot* run in R while the Shiny App is also running - before attempting to run code in R ensure the Shiny App window is closed or click the red stop button at the right hand corner of the console  
  
 
 ## Data Analysis 
