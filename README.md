@@ -49,10 +49,10 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ### Useage: 
 - Open the 'Server.R' and 'UI.R' files stored within the R proj.
-#### Loading Libraries: 
+
 - In the Server.R file, load all libraries at the start of the R script (This can be done via **Ctrl+Enter** in windows or **Cmd+Enter** for Mac or by selecting the code and hitting run in the top right hand corner) 
 
-#### Loading Data:
+##### Loading Data:
 - Ensure the dataset has been downloaded and is in the data folder (this should happen automatically when the "Shiny App" file is downloaded), the Master data file is named "SLAS2_Master_110920" 
   - A 'test' dataset ("SLAS2_Master_110920Test") with a reduced number of data points can also be loaded by moving the position of the # in the section 'Load Data' like so: 
     - Orignal code to load full dataset: 
@@ -65,7 +65,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
      
      To load the test dataset. This dataset allows for an improved interactive experience and can be used to simply test the user experience of the Shiny App without the need to load the full dataset used for analysis
      
-#### Running/Closing the Shiny App:
+##### Running/Closing the Shiny App:
 - To open the Shiny App from within R studio, click the 'Run App' button that appears at the top right hand corner of either the Server.R or UI.R file
   - This will prompt a pop out window with the Shiny App
 
