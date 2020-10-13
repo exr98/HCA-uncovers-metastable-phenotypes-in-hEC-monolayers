@@ -18,7 +18,7 @@ This repository contains the scripts used in the paper ["High Content Analysis u
 
 ## ECPT
 Endothelial Cell Profiling Tool (ECPT) expands on [previous work](https://journals.sagepub.com/doi/10.1177/2472555218820848) and provides a 
-high content analysis platform to characterise single endothelial cells (EC) within an endothelial monolayer capturing context features, cell features and subcellular features including Inter-endothelial adherens junctions (IEJ). This unbiased approach allows to quantify EC diversity and feature variance.
+high content analysis platform to characterise single endothelial cells (EC) within an endothelial monolayer capturing context features, cell features and subcellular features including Inter-endothelial adherens junctions (IEJ). This unbiased approach allows quantification of EC diversity and feature variance.
 
 Key improvements of the new workflow include:
 1) The ability to phenotype widely heterogeneous EC without user input 
