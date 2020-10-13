@@ -11,6 +11,8 @@ This repository contains the scripts used in the paper ["High Content Analysis u
 
 - "SLAS2 NotebookD1R3_4.Rmd" contains the R scripts for data visualisation
 
+&nbsp;
+&nbsp;
 
 ## ECPT
 Endothelial Cell Profiling Tool (ECPT) expands on [previous work](https://journals.sagepub.com/doi/10.1177/2472555218820848) and provides a 
@@ -34,7 +36,8 @@ All software required for this pipeline is open source and available for downloa
 ### Useage: 
 For a detailed description and step-by-step walk through of carrying out analysis using ECPT, refer to the [supplementary methods section](Link to appendix).   
 
-
+&nbsp;
+&nbsp;
 
 
 ## Shiny App
@@ -73,6 +76,8 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ###### Note: Code *cannot* run in R while the Shiny App is also running - before attempting to run code in R ensure the Shiny App window is closed or click the red stop button at the right hand corner of the console  
  
+&nbsp;
+&nbsp;
 
 ## Data Analysis 
 
@@ -85,6 +90,8 @@ Before attempting to run the notebooks ensure:
    - Version 4.0.2. was used at the time of writing and this version or above is required for useage 
 - All required packages at the top of the script are installed and loaded 
 
+&nbsp;
+&nbsp;
 
 ## Authors:
 Francois Chesnais(1), Juliette Le Caillec(1), Errin Roy(2), Davide Danovi(2), Lorenzo Veschini(1) 
@@ -93,10 +100,12 @@ Francois Chesnais(1), Juliette Le Caillec(1), Errin Roy(2), Davide Danovi(2), Lo
 
 (2) Stem Cell Hotel, Centre for Stem Cells & Regenerative Medicine, King’s College London 
 
+&nbsp;
 
 ## For support please contact:
 Lorenzo Veschini at lorenzo.1.veschini@kcl.ac.uk 
 
+&nbsp;
 
 ## Copy right and License Information: 
 
