@@ -107,6 +107,6 @@ Lorenzo Veschini at lorenzo.1.veschini@kcl.ac.uk
 
 &nbsp;
 
-## Copy right and License Information: 
+## License Information: 
 
 This software is licensed with GNU General Public License v3.0. Please see the attached [LICENSE](https://github.com/exr98/HCA-uncovers-metastable-phenotypes-in-hEC-monolayers/blob/main/LICENSE) file for details.
