@@ -59,7 +59,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
       - `<Master <- read.csv("data/SLAS2_Master_110920.csv") #Main full dataset>`               
       - `<#Master <- read.csv("data/SLAS2_Master_110920Test.csv") #Smaller test dataset>` 
   
-    - To: 
+   - To: 
       - `<#Master <- read.csv("data/SLAS2_Master_110920.csv") #Main full dataset>`                        
       - `<Master <- read.csv("data/SLAS2_Master_110920Test.csv") #Smaller test dataset>` 
      
