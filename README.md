@@ -2,7 +2,7 @@
 
 This repository contains the scripts used in the paper ["High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations"](incl. link to paper): 
 
-- **"ECPT"** (Endothelial Cell Profiling Tool) contains the cell profiler pipeline used to carry out endothelial cell characterisation
+- **"CP Pipeline"** (Endothelial Cell Profiling Tool) contains the cell profiler pipeline used to carry out endothelial cell characterisation
 
 - **"Shiny App V1.2"** contains the raw data .csv file and R scripts to reproduce the Shiny Application for interactive data selection 
  used to subset the data after tSNE clustering 
