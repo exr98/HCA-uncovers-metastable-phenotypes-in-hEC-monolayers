@@ -88,7 +88,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ## Data Analysis 
 
-The R scripts along with the raw data used to create all plots and carry out all statistical analysis can be found in the SLAS2 notebooks. 
+The R scripts along with the raw data used to create all plots and carry out all statistical analysis can be found in the "R-Analysis" folder. 
 
 ### Requirements and useage: 
 
