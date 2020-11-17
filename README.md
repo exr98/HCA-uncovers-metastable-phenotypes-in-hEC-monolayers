@@ -41,7 +41,7 @@ All software required for this pipeline is open source and available for downloa
 
 
 ### Useage: 
-For a detailed description and step-by-step walk through of carrying out analysis using ECPT, refer to the [supplementary methods section](Link to appendix).   
+For a detailed description and step-by-step walk through of carrying out analysis using ECPT, refer to Appendix 1.   
 
 &nbsp;
 
