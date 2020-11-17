@@ -7,11 +7,15 @@ This repository contains the scripts used in the paper "High Content Analysis un
 - **"Shiny App V1.2"** contains the raw data .csv file and R scripts to reproduce the Shiny Application for interactive data selection 
  used to subset the data after tSNE clustering 
  
-- **"SLAS2_Stats_Notebook.Rmd"** contains the R scripts used for statistical analysis 
+ **Within the "R-Analysis" folder:**
+ 
+- **"ECPT_Stats_Oct2020.Rmd"** contains the R scripts used for statistical analysis 
 
-- **"SLAS2 NotebookD1R3_4.Rmd"** contains the R scripts used for generation of plots and data visualisation
+- **"ECPT_Plots_Oct_2020.Rmd"** contains the R scripts used for generation of plots and data visualisation
 
-- **"Servive Notebook.Rmd"** contains the scripts used for database cleaning and dimensionality reduction 
+- **"ECPT_Service_Oct_2020.Rmd"** contains the scripts used for database cleaning and dimensionality reduction
+
+- **ClusterX.Rmd"** contains the datapoints for each cluster identified via tSNE 
 
 &nbsp;
 
