@@ -15,7 +15,7 @@ This repository contains the scripts used in the paper "High Content Analysis un
 
 - **"ECPT_Service_Oct_2020.Rmd"** contains the scripts used for database cleaning and dimensionality reduction
 
-- **ClusterX.Rmd"** contains the datapoints for each cluster identified via tSNE 
+- **"Cluster_X.RData"** contains the datapoints for each cluster identified via tSNE 
 
 &nbsp;
 
