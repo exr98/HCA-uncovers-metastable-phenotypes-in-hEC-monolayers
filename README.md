@@ -1,6 +1,6 @@
 # HCA-uncovers-metastable-phenotypes-in-hEC-monolayers
 
-This repository contains the scripts used in the paper ["High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations"](incl. link to paper): 
+This repository contains the scripts used in the paper "High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations": 
 
 - **"CP Pipeline"** (Endothelial Cell Profiling Tool) contains the cell profiler pipeline used to carry out endothelial cell characterisation
 
@@ -59,7 +59,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
 - In the Server.R file, load all libraries at the start of the R script (This can be done via **Ctrl+Enter** in windows or **Cmd+Enter** for Mac or by selecting the code and hitting run in the top right hand corner) 
 
 ##### Loading Data:
-- Ensure the dataset has been downloaded and is in the data folder (this should happen automatically when the "Shiny App V1.2" file is downloaded), the Master data file is named "SLAS2_Master_110920" 
+- Ensure the dataset has been downloaded and is in the data folder (this should happen automatically when the "Shiny App V1.2" file is downloaded), the Master data file is named "SLAS2_Master_110920" and needs to be unzipped before use due to the large file size
 - A 'test' dataset ("SLAS2_Master_110920Test") with a reduced number of data points is also available and allows for an improved interactive experience to simply test the user experience of the Shiny App without the need to load the full dataset used for analysis. It can be loaded by moving the position of the # in the section 'Load Data' like so: 
   - Orignal code to load full dataset: 
       - `<Master <- read.csv("data/SLAS2_Master_110920.csv") #Main full dataset>`               
@@ -107,6 +107,8 @@ Francois Chesnais(1), Juliette Le Caillec(1), Errin Roy(2), Davide Danovi(2), Lo
 
 ## For support please contact:
 Lorenzo Veschini at lorenzo.1.veschini@kcl.ac.uk 
+
+For support using the respository and Shiny Application, contact Errin Roy at errin.roy@kcl.ac.uk
 
 &nbsp;
 
