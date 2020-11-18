@@ -1,6 +1,6 @@
 # HCA-uncovers-metastable-phenotypes-in-hEC-monolayers
 
-This repository contains the scripts used in the paper "High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations": 
+This repository contains the scripts used in the paper ["High Content Analysis uncovers metastable phenotypes in human endothelial cell monolayers and key features across distinct populations"](https://www.biorxiv.org/content/10.1101/2020.11.17.362277v1): 
 
 - **"CP Pipeline"** (Endothelial Cell Profiling Tool) contains the cell profiler pipeline used to carry out endothelial cell characterisation
 
@@ -41,7 +41,7 @@ All software required for this pipeline is open source and available for downloa
 
 
 ### Useage: 
-For a detailed description and step-by-step walk through of carrying out analysis using ECPT, refer to Appendix 1.   
+For a detailed description and step-by-step walk through of carrying out analysis using ECPT, refer to [Appendix 1](https://www.biorxiv.org/content/10.1101/2020.11.17.362277v1.supplementary-material).   
 
 &nbsp;
 
