@@ -7,7 +7,7 @@ This repository contains the scripts used in the paper ["High Content Analysis u
 - **"Shiny App V1.2"** contains the raw data .csv file and R scripts to reproduce the Shiny Application for interactive data selection 
  used to subset the data after tSNE clustering 
  
- To see the shiny application in action, go [here](https://exr98.github.io/HCA-uncovers-metastable-phenotypes-in-hEC-monolayers/)
+ To see the shiny application in action, go [here](https://errin.shinyapps.io/ECPT_Shiny_App/)
  
  **Within the "R-Analysis" folder:**
  
