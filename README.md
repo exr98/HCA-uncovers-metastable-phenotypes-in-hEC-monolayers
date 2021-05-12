@@ -51,6 +51,8 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ## Shiny App
 
+The shiny app is available to view in browser from [here](https://errin.shinyapps.io/ECPT_Shiny_App/). The following sections outline how to view the code and deploy the shiny application from within R studio. 
+
 ### Requirements: 
 1. Install [R](https://www.r-project.org/) and [R studio](https://rstudio.com/products/rstudio/download/)
    - Version 4.0.2. was used to develop this application and this version or above is required for useage 
