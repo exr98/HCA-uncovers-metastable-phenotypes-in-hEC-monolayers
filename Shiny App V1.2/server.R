@@ -1,4 +1,4 @@
-#Load Libraries #################################################################
+#To begin, load all Libraries #################################################################
 
 library("dplyr")
 library("tidyverse")
@@ -13,7 +13,8 @@ library("readr")
 library("shinythemes")
 
 
-#Load data ######################################################################
+#Next, choose a dataset to load ######################################################################
+
 
 #Master <- read.csv("data/SLAS2_Master_110920.csv") #Main full dataset
 
@@ -27,6 +28,7 @@ function(input, output, session){
   
   
   #Load theme ####################################################################
+  #To following lines of code define the aesthetics of the output graphs 
   
   lory_theme <- function() {
     theme(
@@ -56,7 +58,8 @@ function(input, output, session){
 
   
   
-#### tSNE plot ####################################################################################################################  
+#### tSNE plot #################################################################################################################### 
+#The tSNE plot seen within the application is specified by the code within this section
   
   tSNEplot <- ggplot(Master, aes(tSNE_1, tSNE_2, data_id = tSNE_1, colour = factor <- get(input$select_col), res = 96)) +
     geom_point_interactive(size= 0.3,
@@ -78,7 +81,9 @@ function(input, output, session){
   
 
 # Reactive elements ###########################################
+ #The addition of these elements allows the tSNE plot to become interactive within the shiny application
   
+  #Here, we specify the plot which we wish to make reactive, which is the tSNE plot 
   selected_tSNE_1 <- reactive({
     input$tSNEplot_selected
     })
@@ -88,7 +93,6 @@ function(input, output, session){
     selection <<-as.data.frame(Master[Master$tSNE_1 %in% selected_tSNE_1(),])
     })
   
-
   
   output$console3 <- renderPrint({
      input$tSNEplot_hovered
@@ -112,6 +116,8 @@ function(input, output, session){
                               message = character(0))
   })
   
+  #This creates a datatable, and the input dataset is specified to originate from the Master and reflect the selected datapoints 
+  #Extensions such as 'buttons' allows the used to subsequently save the generated datatable directly from the app, and the formats available to the user are specified within the options
   output$datatab3 <- renderDT(
     Master[Master$tSNE_1 %in% selected_tSNE_1(),],
     extensions = 'Buttons', 
