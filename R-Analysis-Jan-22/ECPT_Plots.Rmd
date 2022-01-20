@@ -1,0 +1,290 @@
+---
+title: "ECPT Plots"
+output: html_notebook
+---
+
+ECPT Plots Theme
+```{r}
+ECPT_theme <- function() {
+  theme(
+    plot.background = element_rect(colour = "transparent", fill = "transparent"),
+    
+    strip.background = element_rect(colour="transparent", fill = "transparent"),
+    strip.placement = "inside",
+    
+    panel.border = element_rect(colour = "grey25", fill = NA, linetype = 1),
+    panel.background = element_rect(fill = "white"),
+    panel.grid.major.x = element_line(colour = "grey25", linetype = 3, size = 0.15),
+    panel.grid.minor.x = element_line(colour = "grey25", linetype = 3, size = 0.05),
+    panel.grid.major.y =  element_line(colour = "grey25", linetype = 3, size = 0.15),
+    panel.grid.minor.y = element_line(colour = "grey25", linetype = 3, size = 0.05),
+    axis.text.x = element_text(color = "black", size = 24, angle = 0, hjust = .5, vjust = .5, face = "plain"),
+    axis.text.y = element_text(color = "black", size = 18, angle = 0, hjust = 0, vjust = 0, face = "plain"),
+    axis.title.x = element_blank(),
+      # element_text(color = "black", size = 20, angle = 0, hjust = .5, vjust = .5, face = "plain"),
+    axis.title.y = element_text(color = "black", size = 20, angle = 90, hjust = 0.5, vjust = 0.5, face = "plain"),
+    strip.text.x = element_text(color = "black", size = 24, angle = 0, hjust = .5, vjust = 0, face = "plain"),
+    strip.text.y = element_text(color = "black", size = 24, angle = 90, hjust = .5, vjust = 0, face = "plain"),
+    legend.position = "none",
+    legend.key = element_blank(),
+    legend.direction = "horizontal", 
+    legend.title.align = 0.5
+  )
+}
+```
+
+
+```{r}
+### Specific to Chesnais et al. J Cell Sci 2022
+ECPT_Data_NoDAPT$Time <- ifelse(ECPT_Data_NoDAPT$Experiment %in% c("RE1","RE2","RE3"), 48,96)
+```
+
+Principal Components Analysis
+```{r}
+ECPT_PCA_Dat<-ECPT_Data_NoDAPT[ECPT_Data_NoDAPT$Treatment=="CTRL"&ECPT_Data_NoDAPT$Time==96,]
+ECPT_PCA_Dat <- ECPT_PCA_Dat[,c("Cell_Area", "Cell_Perim","Cell_MaxL","Cell_MinL","WLR","HEST_IntI_Norm","NCH_IntI_Norm","PJ2","PJ3","PJ4","Img_Nuclei_N", "Tot_NCH")]
+ECPT_PCA_Dat <-BBmisc::normalize(ECPT_PCA_Dat, method = "range", range = c(0,1), margin = 1L, on.constant = "quiet")
+ECPT_PCA<-prcomp(ECPT_PCA_Dat)
+summary(ECPT_PCA)
+
+```
+
+Cell Number
+```{r}
+pCell_N <- ggplot(CellNumbersC)
+
+pCell_N+
+  geom_boxplot(aes(E_Set,Counts, colour=E_Set), outlier.shape = NA)+
+  facet_grid(Treatment~Cell_Type)+
+  stat_compare_means(aes(E_Set,Counts,label = ..p.signif..), label.y = 130, label.x = 1.4, size =8, tip.length = 0)+
+  stat_summary(aes(E_Set,Counts),fun.y=mean, geom="point", shape=1, size=3, color="black", fill="transparent")+
+  geom_text(data = n_C,aes(x=E_Set, y=10, label=n))+
+  scale_color_manual(values = c("black","darkred"))+
+  ylab("Nuclei/Image")+
+  ECPT_theme()
+
+```
+
+Cell Cycle Histograms
+```{r}
+E1<- Master_D12_Cl %>% select(Img_N,Cell_Type,Treatment, DNA_IntI_Norm)
+E2<- ECPT_Data_NoDAPT%>% select(Img_N,Cell_Type,Treatment,DNA_IntI_Norm)
+E2$Experiment<-E2$Well<-NULL
+E_Combo <- rbind(E1,E2)
+
+pCCYcle <- ggplot(E_Combo)
+pCCYcle+
+  geom_histogram(aes(DNA_IntI_Norm, after_stat(density)), binwidth = 10) +
+  #geom_density(aes(log10(1+HEST_IntI_Norm), colour=Cell_Cycle))+
+  scale_x_continuous(limits = c(100,2500), breaks = c(900,1900), labels = c("2N","4N"))+
+  facet_grid(Treatment~Cell_Type)+
+  #facet_wrap(vars(Treatment)) +
+  ECPT_theme()
+```
+
+Area
+```{r}
+nSub<-Master_D12_Cl[Master_D12_Cl$Cell_Area<=35000&Master_D12_Cl$Cell_Cycle!="LM",]%>%group_by(Cell_Type, Treatment)%>%
+  summarise(n = length(Un_Cell_Id),
+            area =mean(Cell_Area))
+nConf<-ECPT_Data_NoDAPT[ECPT_Data_NoDAPT$Cell_Area<=35000&ECPT_Data_NoDAPT$Cell_Cycle!="LM",]%>%group_by(Cell_Type, Treatment)%>%summarise(n = length(Un_Cell_Id))
+
+Area <- ggplot(data =Master_D12_Cl[Master_D12_Cl$Cell_Area<=35000&Master_D12_Cl$Cell_Cycle!="LM",])
+Area+
+  geom_density(aes(Cell_Area, after_stat(scaled), colour = Cell_Cycle))+
+  geom_density(data=ECPT_Data_NoDAPT[ECPT_Data_NoDAPT$Cell_Area<=35000&ECPT_Data_NoDAPT$Cell_Cycle!="LM",],aes(Cell_Area, after_stat(scaled), group = Cell_Cycle), colour="grey43", linetype="dashed")+
+  facet_grid(Treatment~Cell_Type)+
+  ECPT_theme()
+```
+
+```{r}
+PlStressF<- ggplot(StressFStats,aes(x= Cell_Type, y=Perc_ST))
+PlStressF+
+  geom_boxplot(aes(colour=Treatment, fill=Cell_Type),outlier.shape = NA)+
+  facet_wrap(vars(Treatment))+
+  stat_compare_means(aes(label= ..p.signif..), comparisons= comp, label.y = c(60,68,76), size = 8, tip.length = 0,hide.ns = T, vjust=0.6)+
+  stat_summary(fun.y=mean, geom="point", shape=1, size=3, color="black", fill="transparent")+
+  scale_colour_manual(values = c("black", "darkred"))+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  ylab("% cells with stress fibers/well")+
+  ECPT_theme()
+```
+
+Cell Cycle boxplots
+```{r}
+Plot_CellCyBox2 <- ggplot(CellCycleDividingC, aes(x= E_Set, y= Div, colour= E_Set)) 
+
+Plot_CellCyBox2+
+  geom_boxplot(aes(fill= Cell_Type), outlier.shape = NA) +
+  facet_grid(Treatment~Cell_Type) +
+  ylab("% of Dividing Cells/Image") +
+  stat_compare_means(method = "anova", label.y = 5)+
+  stat_compare_means(aes(label= ..p.signif..), comparisons= compSC, label.y = c(25,33,41), size = 8, tip.length = 0,hide.ns = T, vjust=0.6)+
+  stat_summary(aes(E_Set,Div),fun.y=mean, geom="point", shape=1, size=3, color="black", fill="transparent")+
+  scale_colour_manual(values = c("black", "red","darkred"))+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  scale_y_continuous(limits = c(0,50))+
+  geom_text(data = n_CD,aes(x=E_Set, y=48, label=n), colour="black")+
+  ECPT_theme()
+```
+
+Width/Length Ratio
+```{r}
+WLR <- ggplot(ECPT_Data_NoDAPT, aes(x=Treatment, y=WLR))
+
+WLR+
+  geom_boxplot(aes(colour = Treatment))+ 
+  facet_wrap(vars(Cell_Type)) +
+  #stat_compare_means(method = "anova", label.y = 0.7)+
+  stat_compare_means(aes(label= ..p.signif..), comparisons= compcct, label.y = 0.8, size = 8, tip.length = 0,hide.ns = T, vjust=0.6)+
+  stat_summary(fun.y=mean, geom="point", shape=1, size=3, color="black", fill="transparent")+
+  ECPT_theme() +
+  scale_color_manual(values = c("black","red")) +
+  ylab("Width/Length Ratio")
+```
+
+NOTCH Box plots
+```{r}
+pNCH_S<- ggplot(NCH_Stats[is.na(NCH_Stats$NCH_Bins)==F,], aes(x=Cell_Type,y=PCellB))
+pNCH_S+
+  geom_boxplot(aes(fill=Cell_Type, colour=Treatment))+
+  facet_grid(Treatment~NCH_Bins)+
+  stat_compare_means(aes(Cell_Type,PCellB,label = ..p.signif..),comparisons= comp, label.y = c(80,88,96), size =8, tip.length = 0, method = "t.test",bracket.size=0.2, hide.ns = T, vjust = 0.6)+
+  stat_summary(aes(Cell_Type,PCellB),fun.y=mean, geom="point", shape=1, size=3, color="black", fill="transparent")+
+  scale_colour_manual(values = c("black", "darkred"))+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  ylab("% Cells/Well")+
+  scale_y_continuous(limits = c(0,100), breaks = c(0,25,50,75))+
+  ECPT_theme()
+```
+
+```{r}
+pHEST_S<- ggplot(HEST_Stats2, aes(x=Cell_Type,y=PCellB))
+pHEST_S+
+  geom_boxplot(aes(fill=Cell_Type, colour=as.factor(Time)), outlier.shape = NA)+
+  facet_grid(Treatment~HEST_Bins)+
+  stat_summary(aes(Cell_Type,PCellB,colour=as.factor(Time)),fun.y=mean, geom="point", shape=1, size=3, fill="transparent",position = position_dodge(width = .75))+
+  scale_colour_manual(values = c("magenta4","skyblue4"))+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  scale_y_continuous(limits = c(0,100), breaks = c(0,25,50,75))+
+  ylab("% Cells/Well")+
+  ECPT_theme()
+
+pHEST_S<- ggplot(HEST_Stats2, aes(x=as.factor(Time),y=PCellB))
+pHEST_S+
+  geom_boxplot(aes(fill=Cell_Type, colour=as.factor(Time)), outlier.shape = NA)+
+  facet_grid(cols = vars(HEST_Bins), rows = vars(Cell_Type,Treatment))+
+  stat_compare_means(aes(label = ..p.signif..),comparisons= comptime, label.y = c(80,88,96), size =8, tip.length = 0, method = "t.test",bracket.size=0.2, hide.ns = T, vjust = 0.6)+
+  stat_summary(aes(colour=as.factor(Time)),fun.y=mean, geom="point", shape=1, size=3, fill="transparent",position = position_dodge(width = .75))+
+  scale_colour_manual(values = c("magenta4","skyblue4"))+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  scale_y_continuous(limits = c(0,100), breaks = c(0,25,50,75))+
+  ylab("% Cells/Well")+
+  ECPT_theme()
+```
+
+HES Density Distributions
+```{r}
+pHEST <- ggplot(ECPT_Data_NoDAPT)
+pHEST+
+  #geom_boxplot(aes(x= Cell_Type, y=log10(1+HEST_IntI_Norm), colour=HEST_Bins))+  
+  geom_density(aes(HEST_l10,after_stat(scaled), colour = Well), adjust=1/2)+
+  #geom_histogram(aes(log10(1+HEST_IntI_Norm), after_stat(density), colour= Cell_Type),binwidth = 1, position = "dodge")+
+  scale_x_continuous(limits = c(-1,4))+
+  facet_wrap(vars(Treatment, Cell_Type)) +
+  ECPT_theme()
+  #scale_color_manual(values = c("black","red","orange")) 
+  #theme(legend.direction = "horizontal")
+
+pHEST_Time <- ggplot(ECPT_Data_NoDAPT)
+pHEST_Time+
+  geom_density(aes(HEST_l10,after_stat(scaled), colour = as.factor(Time)), adjust=1/2)+
+  scale_colour_manual(values = c("magenta4","skyblue4"))+
+  #scale_fill_manual(values = c("magenta","turquoise4"))+
+  geom_vline(xintercept = c(0.5,1.5,2.5,3.5), alpha=0.3)+
+  facet_grid(Treatment~Cell_Type) +
+  ECPT_theme()
+```
+
+HES ECDFs
+```{r}
+pNCH <- ggplot(ECPT_Data_NoDAPT[ECPT_Data_NoDAPT$Treatment=="VEGF",])
+pNCH+
+  #geom_histogram(aes(Cell_Area), binwidth = 10) +
+  stat_ecdf(aes(log10(1+HEST_IntI_Norm), colour = Cell_Type))+
+  #scale_x_continuous(limits = c(1.5,3.5))+
+  #facet_grid(Cell_Type~Treatment)+
+  facet_wrap(vars(Treatment)) +
+  ECPT_theme()
+  #scale_color_manual(values = c("black","red","orange")) 
+  #theme(legend.direction = "horizontal")
+
+pNCH+
+  #geom_histogram(aes(Cell_Area), binwidth = 10) +
+  stat_ecdf(aes(log10(1+HEST_IntI_Norm), group=Well), colour="grey")+
+  stat_ecdf(aes(log10(1+HEST_IntI_Norm), colour = Cell_Type),     size =2)+
+  #scale_x_continuous(limits = c(1.5,3.5))+
+  #facet_grid(Cell_Type~Treatment)+
+  #facet_grid(Treatment~Cell_Type) +
+  ECPT_theme()
+```
+
+HEST Cell Cycle
+```{r}
+ECPT_Data_NoDAPT$Cell_Cycle<- ordered(ECPT_Data_NoDAPT$Cell_Cycle, levels=c("G0/G1","S","G2/M","LM"))
+compcc <- list(c("G0/G1","S"),c("G0/G1","G2/M"),c("G0/G1","LM"),c("S","G2/M"),c("S","LM"),c("G2/M","LM"))
+compcct <- list(c("CTRL","VEGF"))
+
+PlHEST_CC <- ggplot(ECPT_Data_NoDAPT[ECPT_Data_NoDAPT$HEST_IntI_Norm>10,], aes(x= Cell_Cycle, y= log2(1+HEST_IntI_Norm)))
+
+PlHEST_CC+
+  geom_point(data=ECPT_Data_NoDAPT[ECPT_Data_NoDAPT$HEST_IntI_Norm<=10,], size=0.3)+
+  geom_boxplot(aes(fill=Cell_Cycle, colour= Treatment), outlier.size = 0.1)+
+  facet_grid(Treatment~Cell_Type)+
+  stat_compare_means(aes(Cell_Cycle,log2(1+HEST_IntI_Norm),label = ..p.signif..),comparisons= compcc,  size =8, tip.length = 0, method = "t.test",bracket.size=0.2, hide.ns = T, label.y = c(11,12.5,14,15.5,17,18.5), vjust = 0.6)+
+  stat_summary(aes(Cell_Cycle,log2(1+HEST_IntI_Norm)),fun.y=mean, geom="point", shape=1, size=3, color="black", fill="transparent")+
+  scale_y_continuous(limits = c(0,20), breaks = c(0,5,10))+
+  scale_colour_manual(values = c("black", "darkred"))+
+  scale_fill_manual(values = c("white","darkseagreen2","darkseagreen3", "darkseagreen4"))+
+  ylab("Nuclear HES1 (log2)")+
+  ECPT_theme()
+
+n_sCell <- ECPT_Data_NoDAPT%>%group_by(Time, Cell_Type,Treatment)%>%
+  summarise(n=length(Un_Cell_Id))
+```
+
+```{r}
+compJT<- list(c("48","96"))
+JPlot_TimeCT<-ggplot(JunctionsStatsL[JunctionsStatsL$Time=="96"&JunctionsStatsL$Treatment=="CTRL",], aes(x= Treatment, y= M_J))
+JPlot_TimeCT+
+  geom_boxplot(aes(fill=Cell_Type, colour=J_Type), outlier.shape =  NA)+
+  facet_grid(J_Type~Cell_Type)+
+  stat_compare_means(aes(label = ..p.signif..),comparisons= compcct, label.y=10, size =8, tip.length = 0, method = "t.test",bracket.size=0.2, hide.ns = T, vjust = 0.6)+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  ylab("Cells junction % per well")+
+  ECPT_theme()
+
+#Stats per JunctionType cell_type/Time
+JPlot_TimeCT_T_JT<-ggplot(JunctionsStatsL[JunctionsStatsL$Treatment=="CTRL",], aes(x= J_Type, y= M_J,colour=as.factor(Time)))
+JPlot_TimeCT_T_JT+
+  geom_boxplot(aes(fill=Cell_Type), outlier.shape =  NA)+
+  facet_wrap(vars(Cell_Type))+
+  stat_summary(aes(colour=as.factor(Time)),fun=mean, geom="point", shape=1, size=3, fill="transparent", position = position_dodge(w=0.75))+
+  scale_colour_manual(values = c("magenta4", "skyblue4"))+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  ylab("Cells junction % per field")+
+  ECPT_theme()
+
+JPlot_Time<-ggplot(JunctionsStatsL[JunctionsStatsL$Time==96&JunctionsStatsL$Treatment=="CTRL",], aes(x=Cell_Type, y= M_J))
+JPlot_Time+
+  geom_boxplot(aes(fill=Treatment,colour=Cell_Type), outlier.shape =  NA)+
+  facet_wrap(vars(J_Type))+
+  stat_compare_means(aes(label = ..p.signif..),comparisons= comp, label.y=c(40,48,56), size =8, tip.length = 0, method = "t.test",bracket.size=0.2, hide.ns = T, vjust = 0.6)+
+  stat_summary(aes(group=Time),fun=mean, geom="point", shape=1, size=2, color="black", fill="transparent", position = position_dodge(width = .75))+
+  scale_fill_manual(values = c("black", "darkred"))+
+  scale_colour_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  ylab("Cells junction % per well")+
+  ECPT_theme()
+```
+
+

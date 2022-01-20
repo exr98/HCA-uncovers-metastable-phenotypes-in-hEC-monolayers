@@ -1,0 +1,161 @@
+---
+title: "ECPT Stats"
+output: html_notebook
+---
+
+Width length ratio stats
+```{r}
+WLR_Stats <- ECPT_Data %>%
+  group_by(Cell_Type, Treatment) %>%
+  summarise(WLR_mean = mean(WLR))
+
+WLR_Stats
+```
+
+Area stats
+```{r}
+Area_Stats <- ECPT_Data %>%
+  group_by(Cell_Type, Treatment) %>%
+  summarise(Area_mean = mean(Cell_Area))
+
+Area_Stats
+```
+
+Combine Databases Chesnais et al.J Cell Sci 2022
+```{r}
+CellNumbers <- ECPT_Data_NoDAPT[ECPT_Data_NoDAPT$Img_Nuclei_N<150,] %>% 
+group_by(Cell_Type, Treatment, Img_N) %>%
+summarise(Counts = mean(Img_Nuclei_N))
+
+CellNumbersO <- Master_D12_Cl[Master_D12_Cl$Img_Nuclei_N<150,] %>% 
+group_by(Cell_Type, Treatment, Img_N) %>%
+summarise(Counts = mean(Img_Nuclei_N))
+
+CellNumbersO$E_Set<- "Sub"
+CellNumbers$E_Set<- "Conf"
+CellNumbersC<- rbind(CellNumbersO,CellNumbers)
+CellNumbersC$E_Set <- ordered(CellNumbersC$E_Set, levels=c("Sub", "Conf"))
+n_C<-CellNumbersC%>%group_by(Cell_Type,Treatment,E_Set)%>%
+  summarise(n=length(Img_N))
+
+rm(CellNumbersO,CellNumbers)
+```
+
+Stress fibres stats
+```{r}
+StressFStats <- Master_D12_Cl%>%group_by(Cell_Type, Treatment, Img_N,Cell_Act_Cl)%>% summarise(counts=length(Un_Cell_Id))
+
+StressFStats<-StressFStats%>%pivot_wider(names_from=Cell_Act_Cl, values_from=counts,values_fill=0)
+StressFStats<-StressFStats%>%mutate(NoSF=sum(Quiescent,Activated),
+                                    SF=Stressed,
+                                    N=sum(NoSF,SF),
+                                    Perc_ST=SF/N*100)
+
+n_SF_St <- StressFStats%>%dplyr::group_by(Cell_Type,Treatment)%>%
+  dplyr::summarise(n=length(Img_N))
+```
+
+Cell Cycle Stats
+```{r}
+CellCycleStats <- ECPT_Data_NoDAPT %>% 
+group_by(Experiment, Time,Cell_Type, Treatment, Img_N, Img_Nuclei_N, Cell_Cycle) %>%
+summarise(Counts = length(Cell_Cycle))%>%
+mutate(Perc = Counts / sum(Counts)*100)
+
+CellCycleStatsO <- Master_D12_Cl %>% 
+group_by(Experiment, Cell_Type, Treatment, Img_N, Img_Nuclei_N, Cell_Cycle) %>%
+summarise(Counts = length(Cell_Cycle))%>%
+mutate(Perc = Counts / sum(Counts)*100)
+CellCycleStatsO$Time<-0
+
+
+CellCycleStats$E_Set[CellCycleStats$Time=="48"] <- "Conf_48"
+CellCycleStats$E_Set[CellCycleStats$Time=="96"] <- "Conf_96"
+CellCycleStatsO$E_Set <- "Sub"
+CellCycleStatsC<- rbind(CellCycleStatsO,CellCycleStats)
+
+CellCycleDividingC <- CellCycleStatsC[CellCycleStatsC$Cell_Cycle=="G0/G1",]%>%
+  mutate(Div = 100-Perc)
+CellCycleDividingC$E_Set <- ordered(CellCycleDividingC$E_Set, levels=c("Sub", "Conf_48","Conf_96"))
+
+SummaryCellCycleStatsCC <- CellCycleStatsC %>%
+  group_by(Time,Cell_Type, Treatment, Cell_Cycle) %>%
+  summarise(n = length(Perc),
+            mean = mean(Perc),
+            sd = sd(Perc))
+SummaryCellCycleStats$Dividing<-(100-SummaryCellCycleStats$mean)
+n_CD<-CellCycleDividingC%>%group_by(Cell_Type,Treatment,E_Set)%>%
+  summarise(n=length(Img_N))
+```
+
+NCH Stats
+```{r}
+ECPT_Data_NoDAPT$NCH_l10 <- log2(1+ECPT_Data_NoDAPT$NCH_IntI_Norm)
+ECPT_Data_NoDAPT$NCH_Bins<- cut(ECPT_Data_NoDAPT$NCH_l10, c(5,7,9,11,15), labels = 1:4)
+
+NCH_Stats <- ECPT_Data_NoDAPT %>%
+  group_by(Experiment,Cell_Type, Treatment,Donor, Img_N, NCH_Bins) %>%
+  summarise(CellsB = length(Un_Cell_Id),
+            CellsW = mean(Img_Nuclei_N),
+            PCellB = CellsB/CellsW*100)
+
+NCH_Stats2 <- ECPT_Data_NoDAPT %>%
+  group_by(Time,Cell_Type, Treatment,Img_N, NCH_Bins) %>%
+  summarise(CellsB = length(Un_Cell_Id),
+            CellsW = mean(Img_Nuclei_N),
+            PCellB = CellsB/CellsW*100)
+```
+
+
+HES Stats
+```{r}
+ECPT_Data_NoDAPT <- ECPT_Data_NoDAPT %>% group_by(Experiment,Well) %>%
+  mutate(Well_Nu_N= length(Cell_NCheck))
+
+ECPT_Data_NoDAPT$HEST_l10 <- log10(1+ECPT_Data_NoDAPT$HEST_IntI_Norm)
+ECPT_Data_NoDAPT$HEST_Bins<- cut(ECPT_Data_NoDAPT$HEST_l10, c(-0.5,0.5,1.5,2.5,4.5), labels = 0:3)
+
+
+HEST_Stats <- ECPT_Data_NoDAPT %>%
+  group_by(Experiment,Cell_Type, Treatment,Donor, Img_N, HEST_Bins) %>%
+  summarise(CellsB = length(Un_Cell_Id),
+            CellsW = mean(Img_Nuclei_N),
+            PCellB = CellsB/CellsW*100)
+
+HEST_Stats2 <- ECPT_Data_NoDAPT %>%
+  group_by(Time,Cell_Type, Treatment, Img_N, HEST_Bins) %>%
+  summarise(CellsB = length(Un_Cell_Id),
+            CellsW = mean(Img_Nuclei_N),
+            PCellB = CellsB/CellsW*100)
+
+HEST_Sum<- HEST_Stats%>%group_by(Cell_Type,Treatment, HEST_Bins)%>%
+  summarise(meanP=mean(PCellB))
+```
+
+```{r}
+JunctionsStats <- ECPT_Data_NoDAPT[ECPT_Data_NoDAPT$PJ0<10,] %>% 
+group_by(Experiment, Time, Cell_Type, Treatment, Img_N) %>%
+summarise(M_J0=mean(PJ0),
+          M_J1=mean(PJ1),
+          M_J2=mean(PJ2),
+          M_J3=mean(PJ3),
+          M_J4=mean(PJ4),
+          M_J5=mean(PJ5),
+          n=length(Un_Cell_Id),
+          M_HEST_H = mean(length(Un_Cell_Id[HEST_Bins==3]))/length(Un_Cell_Id)*100,
+          M_HEST_L = mean(length(Un_Cell_Id[HEST_Bins==0]))/length(Un_Cell_Id)*100
+          )
+JunctionsStatsL <- gather(JunctionsStats[JunctionsStats$n>=10,], J_Type, M_J, M_J0:M_J5, factor_key = T)
+
+n_Jun<-JunctionsStats%>%group_by(Time,Cell_Type,Treatment,)%>%
+  summarise(n=length(Img_N))
+```  
+
+
+
+```{r}
+comparisons <- list(c("HAoEC", "HPMEC"), c("HAoEC", "HUVEC"), c("HPMEC", "HUVEC"))
+comp <- list(c("HAoEC", "HPMEC"), c("HAoEC", "HUVEC"), c("HPMEC", "HUVEC")) 
+compSC<-list(c("Sub","Conf_48"),c("Conf_48", "Conf_96"),c("Sub","Conf_96"))
+comptime<-list(c("48","96"))
+```

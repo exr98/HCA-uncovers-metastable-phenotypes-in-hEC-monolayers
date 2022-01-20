@@ -1,0 +1,505 @@
+---
+title: "ECPT Spatial Autocorrelation"
+output: html_notebook
+---
+
+Extract Junctions data and neighbours
+```{r}
+CONNEX <- dbConnect(RSQLite::SQLite(), "/path/data.db")
+ExtractJuncSegs1 <- function(x) {
+  tbl(x, "Per_JunctionSegments") %>%
+  select (Img_N = ImageNumber,
+          Junction_Number = JunctionSegments_Number_Object_Number,
+          Junction_Length = JunctionSegments_AreaShape_Area) %>%
+            collect()
+}
+Jun_Data<- ExtractJuncSegs1(CONNEX)
+
+ExtractRelationships1 <- function(x) {
+  tbl(x, "Per_Relationships") %>%
+  select (Type_Id = relationship_type_id,
+          Img_N = image_number1,
+          Junction_Number = object_number1,
+          Cell_Neighbour_Number = object_number2) %>%
+            collect()
+}
+
+Jun_Nb<-ExtractRelationships1(CONNEX)[which(ExtractRelationships(CONNEX)$Type_Id == '23'), ]
+
+dbDisconnect(CONNEX)
+```
+
+Create spatial weighted matrix
+```{r}
+eswm <- function(dat){
+  n=dat
+  x= c(1:n)
+  swm=matrix(0L,nrow = n,ncol = n, dimnames = list(x,x))
+  return(swm)
+}
+
+FillM <- function(nb,JLen,mtrx){
+  for (n in seq_along(JLen)){
+    a<- nb[[n]][1]
+    b<- nb[[n]][2]
+    JLeng<-JLen[n]
+    mtrx[a,b]<-JLeng
+  }
+  return(mtrx)
+}
+C_Metadata<-ECPT_Data_NoDAPT%>%group_by(Img_N)%>%
+  summarise(Experiment=Experiment[1],
+            Cell_Type=Cell_Type[1],
+            Treatment=Treatment[1],
+            Time=Time[1],
+            Img_Nu_N=mean(Img_Nuclei_N))
+
+J_Nb_Dat<- merge(Jun_Nb,Jun_Data, by=c("Img_N", "Junction_Number"), all.x = T)
+J_Nb_Dat$Type_Id<-NULL
+J_Nb_Dat <- J_Nb_Dat[order(J_Nb_Dat$Cell_Neighbour_Number),]
+
+J_Nb_Dat<-J_Nb_Dat%>%group_by(Img_N)%>%mutate(Ce=length(unique(Cell_Neighbour_Number)))
+
+J_Nb_DatG<- J_Nb_Dat%>%group_by(Img_N,Junction_Number)%>%summarise(Img_N=mean(Img_N),
+           JLen= mean(Junction_Length),
+           nb = list(Cell_Neighbour_Number),
+           Ce_N=mean(Ce))
+
+J_Nb_DatG<- J_Nb_DatG%>%group_by(Img_N,nb)%>%summarise(JLen=sum(JLen),
+                                                       Ce_N=mean(Ce_N))
+
+JNb_Tib<- J_Nb_DatG%>%group_by(Img_N)%>%summarise(CeN=mean(Ce_N),
+                                                  
+                                                  JLenL=list(JLen),                                                       nbL=list(nb),
+                                                  m=list(eswm(CeN)))
+
+JNb_TibMap<-left_join(C_Metadata,JNb_Tib)
+
+M_List<-list()
+for (n in seq_along(JNb_TibMap$Img_N)){
+  M_List[[n]]<-FillM(JNb_TibMap$nbL[[n]],JNb_TibMap$JLenL[[n]],JNb_TibMap$m[[n]])
+  }         
+C_HES <-tibble::as_tibble(cbind(Img_N=ECPT_Data_NoDAPT$Img_N, Cell=ECPT_Data_NoDAPT$Cell_NCheck, HES=ECPT_Data_NoDAPT$HEST_IntI_Norm))
+
+C_NCH <-tibble::as_tibble(cbind(Img_N=ECPT_Data_NoDAPT$Img_N, Cell=ECPT_Data_NoDAPT$Cell_NCheck, NCH=ECPT_Data_NoDAPT$NCH_IntI_Norm))
+
+C_Ns <- tibble::as_tibble(cbind(Img_N=JNb_TibMap$Img_N, CeN= JNb_TibMap$CeN))
+
+C_Ns<-C_Ns %>% 
+  rowwise() %>% 
+  transmute(Img_N,CeN, all = list(seq(1, CeN))) %>% 
+  unnest_longer(all)
+C_Ns$CeN<-NULL
+colnames(C_Ns) <- c("Img_N","Cell")
+C_HESC<- full_join(C_Ns,C_HES)
+C_HESC$HES<-replace_na(C_HESC$HES,0)
+mHES<- mean(C_HESC$HES)
+#recreate C-HESC and replace NA with global HES mean instead of 0's
+C_HESC$HES<-replace_na(C_HESC$HES,mHES) 
+
+C_HESVar<-C_HESC%>%group_by(Img_N)%>%summarise(Variance=var(HES))
+C_HESMap<-left_join(C_Metadata,C_HESVar) 
+
+C_NCHC<- full_join(C_Ns,C_NCH)
+C_NCHC$NCH<-replace_na(C_NCHC$NCH,0)
+mNCH<-mean(C_NCHC$NCH)
+C_NCHC$NCH<-replace_na(C_NCHC$NCH,mNCH)
+C_NCHVar<-C_NCHC%>%group_by(Img_N)%>%summarise(Variance=var(NCH))
+C_NCHMap<-left_join(C_Metadata,C_NCHVar) 
+
+```
+
+```{r}
+library(pacman)
+library(adespatial)
+library(spdep)
+
+MoranAn <- function(nb.matrix, Not) {
+    swm<- mat2listw(nb.matrix, row.names = NULL,style="M")
+  ##Calculate Moran's
+    
+    Morans <- moranNP.randtest(Not, swm,alter="less", nrepet = 999)
+    Data<-Morans
+    return(Data)
+    
+}
+
+LMoranAn <- function(nb.matrix, Not) {
+    swm<- mat2listw(nb.matrix, row.names = NULL, style="M")
+  ##Calculate Local Moran's
+    LMorans <- localmoran_perm(Not, swm, zero.policy = T, alternative = "two.sided", p.adjust.method = "bonferroni") 
+    Data<-LMorans
+    return(Data)
+}
+ 
+#Repeat for local and global(positive and negative) NCH and HES
+LMoransDataH<-list()
+for (n in seq_along(C_HESMap$Img_N)) {
+  I<-C_HESMap$Img_N[n]
+  Exm<-as.matrix(M_List[[n]])
+  Exv<-as.vector(C_HESC$HES[C_HESC[1]==I])
+  LMoransDataH[[n]]<-as.data.frame(LMoranAn(Exm,Exv))
+
+}   
+
+
+```
+
+Assemble Local Moran's Data
+```{r}
+TabMorDat<- function(data){
+  ToTab<-c(data$obs[[1]],data$pvalue)
+  return(ToTab)
+}
+
+LM_NCH_Tib<-bind_rows(LMoransDataN1,.id = "column_label")
+LM_NCH_Tib1<- tibble(Img_N=as.numeric(LM_NCH_Tib$column_label),NCH_Ii=LM_NCH_Tib$Ii,NCH_p=LM_NCH_Tib$`Pr(z != 0)`)
+
+LM_NCH_Tib1<-LM_NCH_Tib1%>%group_by(Img_N)%>%mutate(Cell_NCheck=seq(1:length(Img_N)))
+ECPT_Data_NoDAPT<-left_join(ECPT_Data_NoDAPT,LM_NCH_Tib1)
+
+SSignif_LMN<-LM_NCH_Tib1  %>%
+  group_by(Img_N) %>%
+  summarise(N_signif = sum(NCH_p<=0.05, na.rm = TRUE),
+            N_pMi=sum(NCH_p<=0.05&NCH_Ii>=500, na.rm = TRUE),
+            N_nMi=sum(NCH_p<=0.05&NCH_Ii<=500, na.rm = TRUE))
+
+
+
+LM_HES_Tib<-bind_rows(LMoransDataH ,.id = "column_label")
+LM_HES_Tib1<- tibble(Img_N=as.numeric(LM_HES_Tib$column_label),HES_Ii=LM_HES_Tib$Ii,HES_p=LM_HES_Tib$`Pr(z != 0)`)
+
+LM_HES_Tib1<-LM_HES_Tib1%>%group_by(Img_N)%>%mutate(Cell_NCheck=seq(1:length(Img_N)))
+
+ECPT_Data_NoDAPT<-left_join(ECPT_Data_NoDAPT,LM_HES_Tib1)
+
+SSignif_LMH<-LM_HES_Tib1  %>%
+  group_by(Img_N) %>%
+  summarise(H_signif = sum(HES_p<=0.05, na.rm = TRUE),
+            H_pMi=sum(HES_p<=0.05&HES_Ii>=500, na.rm = TRUE),
+            H_nMi=sum(HES_p<=0.05&HES_Ii<=500, na.rm = TRUE))
+
+ECPT_LMoran<-cbind(C_Metadata,SSignif_LMN,SSignif_LMH)
+ECPT_LMoran[7]<-ECPT_LMoran[11]<-NULL
+
+CCyData<-CellCycleDividingC[CellCycleDividingC$Time!=0,]
+CCyData<-tibble(Img_N=CCyData$Img_N,Div=CCyData$Div)
+CCyData<-arrange(CCyData,Img_N)
+ECPT_LMoran<-cbind(ECPT_LMoran,CCyData)
+ECPT_LMoran[13]<-NULL
+
+ECPT_LMoran$H_nMiBin<-ifelse(ECPT_LMoran$H_nMi<=1,"1","2")
+
+#Add Junctions data
+J_St<- JunctionsStats[,5:11]
+ECPT_LM<-left_join(ECPT_LMoran,J_St)
+
+```
+
+Plot signifcative Local Moran's
+```{r}
+compLMor<-list(c("0","1"),c("1","2"),c("2","3"),c("3","4"),c("4","5"),c("5","6"),c("0","4"))
+
+compLMor<-list(c("1","2"))
+
+plLocalMorN<- ggplot(ECPT_LMoran[ECPT_LMoran$Time==96,],aes(Cell_Type,(H_nMi/Img_Nu_N*100), colour= Div))
+plLocalMorN+
+  geom_point(position = position_jitter(w=0.3,h=0.1))+
+  geom_boxplot(fill="transparent")+
+  facet_wrap(vars(Treatment))+
+  stat_compare_means(aes(label=..p.signif..),comparisons = comp ,tip.length = 0, label.y=10,hide.ns = F, vjust = 0.6, size=8)+
+  stat_summary(fun=mean, geom="point", shape=1, size=2, color="black", fill="transparent", position = position_dodge(width = .75))+
+  scale_color_viridis_c()+
+  ECPT_theme()
+
+
+n_ImLM<- ECPT_LMoran[ECPT_LMoran$Div<=40,]%>%group_by(Cell_Type,Treatment, H_nMiBin)%>%summarise(n=length(H_pMiBin))
+
+plLocalMorH<- ggplot(ECPT_LMoran[ECPT_LMoran$Div<=40,],aes(x=H_nMiBin,y=Div))
+plLocalMorH+
+  #geom_point(colour="black",position = position_jitter(w=0.3,h=0.2), shape=1, size=0.2)+
+  geom_boxplot(colour="black",fill="transparent", outlier.shape = NA)+
+  facet_grid(Treatment~Cell_Type)+
+  stat_compare_means(method = "anova", label.y = 40)+
+  stat_compare_means(aes(label=..p.signif..),comparisons = compLMor,tip.length = 0, label.y=30,hide.ns = T, vjust = 0.6, size=8)+
+  stat_summary(fun=mean, geom="point", shape=1, size=2, color="black", fill="transparent", position = position_dodge(width = .75))+
+  geom_text(data = n_ImLM,aes(x=H_nMiBin, y=38, label=n))+
+  #scale_color_gradient(low = "grey",high = "red")+
+  ECPT_theme()
+
+plLocalMorH<- ggplot(ECPT_LMoran[ECPT_LMoran$Div<=25&ECPT_LMoran$Div>0,])
+plLocalMorH+
+  geom_point(aes(H_nMi,Div,colour=as.factor(Time)),position = position_jitter(w=0.3,h=0.2), shape=1, size=0.2)+
+  stat_cor(aes((H_nMi/Img_Nu_N*100),Div), method = "spearman")+
+  facet_wrap(vars(Treatment,Cell_Type,as.factor(Time)))+
+  ECPT_theme()
+
+
+plLocalMorJ<- ggplot(ECPT_Data_NoDAPT[is.na(ECPT_Data_NoDAPT$HES_p)==F,])
+plLocalMorJ+
+  geom_point(aes(NCH_Ii,PJ5),colour="black",position = position_jitter(w=0.3,h=0.2), shape=1, size=0.2)+
+  stat_cor(aes(NCH_Ii,PJ5), method = "spearman")+
+  facet_grid(Treatment~Cell_Type)+
+  ECPT_theme()
+
+
+plLocalMorCCy<- ggplot(ECPT_Data_NoDAPT[is.na(ECPT_Data_NoDAPT$NCH_Ii)==F,],aes(x=Cell_Cycle,y=NCH_Ii))
+plLocalMorCCy+
+  geom_point(aes(colour=HEST_l10),position = position_jitter(w=0.3,h=0), shape=1, size=0.2)+
+  #geom_boxplot(colour="black",fill="transparent", outlier.shape = NA)+
+  facet_grid(Treatment~Cell_Type)+
+  #stat_compare_means(aes(label=..p.signif..),comparisons = compLMor,tip.length = 0, label.y=10,hide.ns = T, vjust = 0.6, size=8)+
+  #stat_summary(fun=mean, geom="point", shape=1, size=2, color="black", fill="transparent", position = position_dodge(width = .75))+
+  scale_color_gradient(low = "green",high = "red")+
+  ECPT_theme()
+```
+
+```{r}
+plMor_Dens<- ggplot(ECPT_LMoran)
+
+plMor_Dens+
+  geom_histogram(aes(H_pMi, fill=as.factor(Time), after_stat(ncount)), position = "dodge", binwidth = 1, alpha=0.3, colour="transparent")+
+  geom_freqpoly(aes(H_pMi, colour=as.factor(Time), after_stat(ncount)), position = "identity", binwidth = 1, size=1)+
+  scale_x_continuous(limits = c(-0.5,10))+
+  scale_colour_manual(values = c("magenta","turquoise4"))+
+  scale_fill_manual(values = c("magenta","turquoise4"))+
+  facet_grid(Treatment~Cell_Type)+
+  ECPT_theme()
+
+```
+
+
+
+Assemble global Moran's data
+```{r}
+MoransTabNn<- map(MoransDataNn,TabMorDat)
+
+#Repeat for MTNp,MTHp,MTHn
+MTNn <-tibble(
+  id=1:2361,                          
+  dat=MoransTabNn)
+#Repeat for MTNp,MTHp,MTHn
+MTNn<-MTNn %>% 
+  unnest(dat) %>% 
+  group_by(id) %>% 
+  mutate(key = row_number()) %>% 
+  spread(key, dat)
+colnames(MTNn)<-c("id","NMoIn","NMoPn")
+
+#Assemble in df
+ECPT_Moran<-cbind(C_Metadata,MTNp,MTNn,MT,MT1)
+ECPT_Moran[9]<-ECPT_Moran[12]<-ECPT_Moran[15]<-NULL
+
+StaSum_GMoran<- ECPT_Moran%>%group_by(Experiment, Cell_Type,Treatment)%>%
+  summarise(pGMi=sum(HMoPpS=="S"),
+            nGMi=sum(HMoPnS=="S"),
+            nRand=sum(HMoPnS=="NS"&HMoPpS=="NS"),
+            tot_n=sum(pGMi,nGMi,nRand),
+            PpGMi=pGMi/tot_n*100,
+            PnGMi=nGMi/tot_n*100,
+            PRand=nRand/tot_n*100)
+
+#remove entry with only 2 images
+StaSum_GMoran<-StaSum_GMoran[StaSum_GMoran$tot_n>10,]
+StaSum_GMoran$pGMi<-StaSum_GMoran$nGMi<-StaSum_GMoran$nRand<-StaSum_GMoran$tot_n<-NULL
+
+SS_GMoSumm<-StaSum_GMoran%>%group_by(Cell_Type,Treatment)%>%
+  summarise(MpGMi=mean(PpGMi),
+            MnGMi=mean(PnGMi),
+            MRand=mean(PRand))
+
+StaSum_GMoran<-pivot_longer(StaSum_GMoran, cols = PpGMi:PRand, names_to = "Mi", values_to = "Perc")
+
+
+```
+
+Plot global Moran's
+```{r}
+compGMor<-list(c("PpGMi","PnGMi"),c("PpGMi","PRand"),c("PnGMi","PRand"))
+Pl_GM <- ggplot(StaSum_GMoran,aes(x=Cell_Type,y=Perc, fill=Cell_Type))
+Pl_GM+
+  geom_boxplot(outlier.shape = NA)+
+  facet_grid(Treatment~Mi, scales = "free")+
+  #stat_compare_means(aes(label=..p.signif..),label.y = 70, size =8, tip.length = 0, comparisons = comp)+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  ECPT_theme()
+
+GMData<-ggplot_build(Pl_GM)
+```
+
+Local Moran's Simple
+```{r}
+Pl_LM1<- ggplot(ECPT_LMoran,aes(x=Cell_Type, y= H_nMi))
+Pl_LM1+
+  geom_boxplot(outlier.shape = NA)+
+  facet_wrap(vars(Treatment))+
+  stat_compare_means(aes(label=..p.signif..),label.y = 5, size =8, tip.length = 0, comparisons = comp)+
+  stat_summary(fun=mean, geom="point", shape=1, size=2, color="black", fill="transparent", position = position_dodge(width = .75))+
+  stat_summary(fun.data =mean_sd, geom="errorbar", size=1, color="red",  position = position_dodge(width = .75))+
+  scale_y_continuous(breaks = c(1,2,3,4,5))+
+  ECPT_theme()
+
+StaSum_LM<-ECPT_LMoran%>%dplyr::group_by(Cell_Type,Treatment)%>%
+  dplyr::summarise(M_pLMi=mean(H_pMi),
+            SD_pLMi=sd(H_pMi),
+            M_nLMi=mean(H_nMi),
+            SD_nLMi=sd(H_nMi),
+            n=length(Img_N))
+
+
+```
+
+
+Moran's Plot
+```{r}
+ECPT_Moran$NMoPpS<- ifelse(ECPT_Moran$NMoPp>0.05,"NS","S")
+ECPT_Moran$NMoPnS<- ifelse(ECPT_Moran$NMoPn>0.05,"NS","S")
+ECPT_Moran$HMoPpS<- ifelse(ECPT_Moran$HMoP>0.05,"NS","S")
+ECPT_Moran$HMoPnS<- ifelse(ECPT_Moran$HMoPn>0.05,"NS","S")
+
+Pl_Mor <- ggplot(ECPT_Moran, aes(x=HMoPpS,fill=Cell_Type, colour= as.factor(Time)))
+Pl_Mor+
+  geom_bar(position = "dodge")+
+  #geom_density(aes(MoI, colour=Cell_Type, after_stat(scaled)))+
+  geom_text(stat='count', aes(label=..count..), nudge_x = c(-0.3,0,0.3),vjust=-1)+
+  geom_boxplot(aes(y=(HMoI*100),fill=Cell_Type))+
+  #geom_histogram(aes(MoP, colour=Cell_Type, after_stat(ncount)), breaks = c(0,0.05,1), position = "dodge")+
+  scale_colour_manual(values = c("black", "darkred"))+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  scale_y_continuous(limits = c(-100,400), breaks = c(-100,0,100,300))+
+  ylab("Img Count")+
+  facet_wrap(vars(Treatment))+
+  ECPT_theme()
+
+Pl_Mor <- ggplot(ECPT_Data_NoDAPT, aes(x=Cell_Type,fill=Cell_Type, colour= Treatment))
+Pl_Mor+
+  #geom_bar(position = "dodge")+
+  #geom_density(aes(MoI, colour=Cell_Type, after_stat(scaled)))+
+  geom_text(stat='count', aes(label=..count..), nudge_x = c(-0.3,0,0.3),vjust=-1)+
+  geom_boxplot(aes(y=Cell_Neighbour_N,fill=Cell_Type))+
+  #geom_histogram(aes(MoP, colour=Cell_Type, after_stat(ncount)), breaks = c(0,0.05,1), position = "dodge")+
+  scale_colour_manual(values = c("black", "darkred"))+
+  scale_fill_manual(values = c("lightcyan2","turquoise3", "darkcyan"))+
+  
+  ylab("Img Count")+
+  facet_wrap(vars(Treatment))+
+  ECPT_theme()
+
+
+```
+Prepare for Moran's plots
+```{r}
+library(pacman)
+
+p_load(pacman, RImageJROI,RColorBrewer, adespatial, spdep, data.table, stringr, rlist, compare, compareDF, readr, rgdal, rgeos, sf)
+
+MoranTheme <- function(){
+  theme(
+    axis.line = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(color = "black", size = 18, angle = 90, hjust = 0.5, vjust = 0, face = "plain"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_rect(fill = "#ffffff", color = NA), 
+    panel.background = element_rect(fill = "#ffffff", color = NA), 
+    legend.background = element_rect(fill = "#ffffff", color = NA),
+    panel.border = element_blank())
+}
+
+```
+
+```{r}
+LMN_65<-LMoransDataN[[53]]
+LMN_360<-LMoransDataN[[169]]
+LMN_2827<-LMoransDataN[[1192]]
+LMN_150<-LMoransDataN[[106]]
+LMH_65<-LMoransDataH[[53]]
+LMH_360<-LMoransDataH[[169]]
+LMH_2827<-LMoransDataH[[1192]]
+LMH_150<-LMoransDataH[[106]]
+
+write.csv(LMN_65, file = "LMN_65.csv")
+write.csv(LMN_360, file = "LMN_360.csv")
+write.csv(LMN_2827, file = "LMN_2827.csv")
+write.csv(LMN_65, file = "LMN_65.csv")
+write.csv(LMH_65, file = "LMH_65.csv")
+write.csv(LMH_360, file = "LMH_360.csv")
+write.csv(LMH_2827, file = "LMH_2827.csv")
+```
+
+Moran's Plots
+```{r}
+
+ijroi <- "/path/ROIData.tiff"
+img<-150
+# HES21 <- ECPT_Data_NoDAPT$HEST_IntI_Norm[ECPT_Data_NoDAPT$Img_N==21]
+# HES21
+ROIs <- list.files(path = ijroi, pattern = "*.roi", all.files = T, full.names = T)
+RoiNames <- list.files(path = ijroi, pattern = "*.roi", all.files = T, full.names = F)
+RoiNames <- gsub('.{4}$', '', RoiNames)
+
+##Import ROIs ####  
+myfiles <- lapply(ROIs, read.ijroi)
+RP <- map(myfiles, 'coords')
+RPoly1 <- map(RP, Polygon) 
+RPoly2 <- map(RPoly1, list)
+RPolySP <- mapply(Polygons, RPoly2, ID = RoiNames) %>% SpatialPolygons() %>% fortify()
+
+LMH<-as.data.frame(LMH_150)
+LMH$id <- RoiNames 
+LMH$HES<-C_HESC$HES[C_HESC[1]==img]
+LMN<-as.data.frame(LMN_150)
+LMN$id <- RoiNames
+LMN$NCH<-C_NCHC$NCH[C_NCHC[1]==img]
+data_LMH <- plyr::join(RPolySP, LMH, by = 'id')
+data_LMN <- plyr::join(RPolySP, LMN, by = 'id')
+```
+
+```{r}
+##Create PLots ####
+
+LMH_plot <- ggplot(data = data_LMH) + geom_polygon(aes(x=long, y=lat, group=id, fill = `Pr(z != 0)`), col = 'black', size = 0.3) +
+  scale_fill_gradient2(low = "green4", high = "#800000", midpoint = 0.1,limits=c(0,1)) + coord_fixed() +
+  ylab("Local Moran's Index - HES") + 
+  MoranTheme()
+
+LMH_ploti <- ggplot(data = data_LMH) + geom_polygon(aes(x=long, y=lat, group=id, fill = Ii), col = 'black', size = 0.3) +
+  scale_fill_gradient2(low = "green4", high = "#800000", midpoint = 0.1) + coord_fixed() +
+  ylab("Local Moran's Index - HES") + 
+  MoranTheme()
+
+HESMap_plot <- ggplot(data = data_LMH) + geom_polygon(aes(x=long, y=lat, group=id, fill = log10(1+HES)), col = 'black', size = 0.3) +
+  scale_fill_gradient2(low = 'white', high = "green4", midpoint = 0.01, limits=c(0,3)) + coord_fixed() +
+  ylab("HES Map") + 
+  MoranTheme()
+
+
+LMN_plot <- ggplot(data = data_LMN) + geom_polygon(aes(x=long, y=lat, group=id, fill = `Pr(z != 0)`), col = 'black', size = 0.3) +
+  scale_fill_gradient2(low = "green4", high = '#800000', midpoint = 0.1) +
+  coord_fixed() +
+  ylab("Local Moran's Index - Notch1") + 
+  MoranTheme()
+
+LMN_ploti <- ggplot(data = data_LMN) + geom_polygon(aes(x=long, y=lat, group=id, fill = Ii), col = 'black', size = 0.3) +
+  scale_fill_gradient2(low = "green4", high = '#800000', midpoint = 0.1) +
+  coord_fixed() +
+  ylab("Local Moran's Index - Notch1") + 
+  MoranTheme()
+
+NCHMap_plot <- ggplot(data = data_LMN) + geom_polygon(aes(x=long, y=lat, group=id, fill = log2(1+NCH)), col = 'black', size = 0.3) +
+  scale_fill_gradient2(low = 'white', high = "green4", midpoint = 8, limits=c(6,11)) + coord_fixed() +
+  ylab("NCH Map") + 
+  MoranTheme()
+```
+
+```{r}
+HESMap_plot
+LMH_plot
+LMH_ploti
+NCHMap_plot
+LMN_plot
+LMN_ploti
+```

@@ -1,0 +1,339 @@
+---
+title: "ECPT Data Import"
+output: html_notebook
+---
+
+Libraries (packages must be installed on local computer with install.packages)
+```{r}
+library(DBI)
+library(RSQLite)
+library(tidyverse)
+library(rlist)
+library(data.table)
+library(ggplot2)
+library(ggstance)
+library(scales)
+library(ggpmisc) 
+library(tidyr)
+library(ggpubr)
+library(psych)
+library(purrr)
+library(dplyr)
+```
+
+!!!
+Following piece of script require mySQL data base. 
+Chesnais et al. J Cell Sci 2022 data are available as tidy DF in R Data or .csv formats and can be imported directly by opening relative files (ECPT_DATA.rds or .csv) in project folder
+!!!
+
+Functions
+```{r}
+ExtractMetaData <- function(x) {
+  tbl(x, "Per_Cell") %>%
+  left_join(tbl(x, "Per_Image")) %>%
+  select (Img_N = ImageNumber,
+          Experiment = Image_Metadata_Experiment,
+          Img_Nuclei_N = Image_Count_Nuclei,
+          Cell_Type = Image_Metadata_Cell,
+          Treatment = Image_Metadata_Treatment,
+          Well = Image_Metadata_Well) %>%
+            collect()
+}
+
+###
+
+ExtractCellMorphology <- function(x){
+  tbl(x, "Per_CellObjExp") %>%
+            select (Img_N = ImageNumber,
+              Cell_NCheck = CellObjExp_Number_Object_Number,
+                    Cell_Area = CellObjExp_AreaShape_Area,
+                    Cell_Perim = CellObjExp_AreaShape_Perimeter,
+                    Cell_MaxL = CellObjExp_AreaShape_MajorAxisLength,
+                    Cell_MinL = CellObjExp_AreaShape_MinorAxisLength,
+                    Cell_Orientation = CellObjExp_AreaShape_Orientation,
+                    Cell_Neighbour_N = CellObjExp_Neighbors_NumberOfNeighbors_Expanded,
+                    Cell_1st_Nb_Dist = CellObjExp_Neighbors_FirstClosestDistance_Expanded,
+                   Cell_2nd_Nb_Dist = CellObjExp_Neighbors_SecondClosestDistance_Expanded,
+                    Perc_Touch = ) %>%
+            collect()
+}
+
+###
+
+ExtractNucleiInfo <- function(x){
+  tbl(x, "Per_Nuclei") %>%
+  select(Img_N = ImageNumber,
+         Cell_NCheck = Nuclei_Number_Object_Number,
+         Nu_X = Nuclei_Location_Center_X,
+         Nu_Y = Nuclei_Location_Center_Y,
+         DNA_IntI = Nuclei_Intensity_IntegratedIntensity_Nuclei,
+         Nu_Clustering = Nuclei_Neighbors_NumberOfNeighbors_20,
+         Nu_1st_Nb_Dist = Nuclei_Neighbors_FirstClosestDistance_20,
+         Nu_2nd_Nb_Dist = Nuclei_Neighbors_SecondClosestDistance_20, Nu_Area = Nuclei_AreaShape_Area,
+         Nu_NCH_IntI = Nuclei_Intensity_IntegratedIntensity_NOTCH,
+         Nu_HEST_IntI = Nuclei_Intensity_IntegratedIntensity_HEST,
+         Nu_NCH_IntI_Mean = Nuclei_Intensity_MeanIntensity_NOTCH,
+         Nu_HEST_IntI_Mean = Nuclei_Intensity_MeanIntensity_HEST) %>%
+  collect()
+}
+
+###
+
+ExtractPercJ <- function(x){
+  tbl(x, "Per_CellsObj") %>%
+            select (Img_N = ImageNumber,
+              Cell_NCheck = CellsObj_Number_Object_Number,
+              Perc_J0 = CellsObj_Neighbors_PercentTouching_NaJ_Adjacent,
+              Perc_J1 = CellsObj_Neighbors_PercentTouching_Class1_Adjacent,
+              Perc_J2 = CellsObj_Neighbors_PercentTouching_Class2_Adjacent,
+              Perc_J3 = CellsObj_Neighbors_PercentTouching_Class3_Adjacent,
+              Perc_J4 = CellsObj_Neighbors_PercentTouching_Class4_Adjacent,
+              Perc_J5 = CellsObj_Neighbors_PercentTouching_Class5_Adjacent,) %>%
+            collect()
+}
+
+###
+
+ExtractCytoInfo <- function(x){
+  tbl(x, "Per_Cytoplasm") %>%
+    select(Img_N = ImageNumber,
+         Cell_NCheck = Cytoplasm_Number_Object_Number,Cy_NCH_IntI = Cytoplasm_Intensity_IntegratedIntensity_NOTCH,
+           Cy_HEST_IntI = Cytoplasm_Intensity_IntegratedIntensity_HEST,
+           Cy_NCH_IntI_Mean = Cytoplasm_Intensity_MeanIntensity_NOTCH,
+           Cy_HEST_IntI_Mean = Cytoplasm_Intensity_MeanIntensity_HEST)
+}
+ExtractCytoInfo(CONNEX)
+
+###
+
+ExtractJuncSegs <- function(x) {
+  tbl(x, "Per_JunctionSegments") %>%
+  select (Img_N = ImageNumber,
+          Junction_Number = JunctionSegments_Number_Object_Number,
+          Junction_Length = JunctionSegments_AreaShape_Area,
+          Class1 = JunctionSegments_Parent_Class1,
+          Class2 = JunctionSegments_Parent_Class2,
+          Class3 = JunctionSegments_Parent_Class3,
+          Class4 = JunctionSegments_Parent_Class4,
+          Class5 = JunctionSegments_Parent_Class5) %>%
+            collect()
+}
+
+###
+
+ExtractRelationships <- function(x) {
+  tbl(x, "Per_Relationships") %>%
+  select (Type_Id = relationship_type_id,
+          Img_N = image_number1,
+          Junction_Number = object_number1,
+          Cell_Neighbour_Number = object_number2) %>%
+            collect()
+}
+
+###
+
+ExtractLMCells <- function(x) {
+  tbl(x, "LM_Cells") %>%
+  select (Img_N = ImageNumber,
+          Cell_NCheck = CellObjExp_Number_Object_Number,
+          Dividing = class) %>%
+            collect()
+}
+```
+
+Connect to MySQL Database
+```{r}
+#Substitute /path/data.db with user defined path pointing to database File
+CONNEX <- dbConnect(RSQLite::SQLite(), "/path/data.db") 
+```
+
+Create Data Frame
+```{r}
+NucleiInfo <- ExtractNucleiInfo(CONNEX)
+NucleiInfo$Un_Cell_Id <- paste(NucleiInfo$Img_N,'_',NucleiInfo$Cell_NCheck)
+CytoInfo <- as.data.frame(ExtractCytoInfo(CONNEX))
+CytoInfo$Un_Cell_Id <- paste(CytoInfo$Img_N,'_',CytoInfo$Cell_NCheck)
+LMCells <- ExtractLMCells(CONNEX)
+LMCells$Un_Cell_Id <- paste(LMCells$Img_N,'_',LMCells$Cell_NCheck)
+
+InitialDF <- ExtractMetaData(CONNEX)[order(ExtractMetaData(CONNEX)$Img_N),] %>%
+cbind(ExtractCellMorphology(CONNEX)[order(ExtractCellMorphology(CONNEX)$Img_N),])%>%
+cbind(ExtractPercJ(CONNEX)[order(ExtractPercJ(CONNEX)$Img_N),])  
+
+InitialDF$Un_Cell_Id <- paste(InitialDF$Img_N,'_',InitialDF$Cell_NCheck)
+InitialDF[order(InitialDF$Un_Cell_Id),]
+
+SecondDF <- InitialDF %>%
+  cbind(NucleiInfo[order(NucleiInfo$Un_Cell_Id),]) %>%  
+  cbind(CytoInfo[order(CytoInfo$Un_Cell_Id),]) %>%
+  cbind(LMCells[order(LMCells$Un_Cell_Id),])
+
+DF <- SecondDF[ , !duplicated(colnames(SecondDF))]
+
+rm(InitialDF, SecondDF)
+```
+
+Calculate derived measures
+```{r}
+### Width to lenth ratio
+DF$WLR <- (DF$Cell_MinL / DF$Cell_MaxL)
+### Total NOTCH
+DF <- DF %>% mutate(Tot_NCH = Nu_NCH_IntI + Cy_NCH_IntI)
+### Tot HES
+DF <- DF %>% mutate(Tot_HEST = x$Nu_HEST_IntI + x$Cy_HEST_IntI)
+
+```
+Removing donor tag from cell type
+```{r}
+#replicate to keep donor tag
+DF$Donor <- DF$Cell_Type
+
+#remove donor letters
+DF$Cell_Type<-gsub("_D1","",as.character(DF$Cell_Type))
+DF$Cell_Type<-gsub("_D2","",as.character(DF$Cell_Type))
+```
+
+Labels fixes (specific to Chesnais et al. J Cell Sci 2022)
+```{r}
+#Change VRGF to VEGF
+DF$Treatment<-gsub("VRGF","VEGF",as.character(DF$Treatment))
+
+#Change HPMED to HPMEC
+DF$Cell_Type<-gsub("HPMED","HPMEC",as.character(DF$Cell_Type))
+
+#Remove cell type from donor column
+DF$Donor<-gsub("HUVEC_","",as.character(DF$Donor))
+DF$Donor<-gsub("HPMEC_","",as.character(DF$Donor))
+DF$Donor<-gsub("HAoEC_","",as.character(DF$Donor))
+```
+
+Create Junctions table and attach to Data Frame
+```{r}
+JunctionDF <- ExtractJuncSegs(CONNEX) %>%
+  inner_join(ExtractRelationships(CONNEX)[which(ExtractRelationships(CONNEX)$Type_Id == '23'), ]) %>%
+  subset(., select = -c(Type_Id))
+JunctionDF$Un_Cell_Id <- paste(JunctionDF$Img_N,'_',JunctionDF$Cell_Neighbour_Number)
+
+ClassChange <- function(x){
+  x %>%
+    mutate(Class1 = ifelse(.$Class1 == 0, "0", "1")) %>%
+    mutate(Class2 = ifelse(.$Class2 == 0, "0", "1")) %>%
+    mutate(Class3 = ifelse(.$Class3 == 0, "0", "1")) %>%
+    mutate(Class4 = ifelse(.$Class4 == 0, "0", "1")) %>%
+    mutate(Class5 = ifelse(.$Class5 == 0, "0", "1"))
+}
+
+JunctionDF3 <- ClassChange(JunctionDF)
+
+JunctionDF3 <- JunctionDF3 %>%
+subset(., select = c(Un_Cell_Id, Class1, Class2, Class3, Class4, Class5))
+
+JunctionDF3$Class1 <- as.numeric(JunctionDF3$Class1)
+JunctionDF3$Class2 <- as.numeric(JunctionDF3$Class2)
+JunctionDF3$Class3 <- as.numeric(JunctionDF3$Class3)
+JunctionDF3$Class4 <- as.numeric(JunctionDF3$Class4)
+JunctionDF3$Class5 <- as.numeric(JunctionDF3$Class5)
+
+JunctionDF4 <- JunctionDF3 %>%
+  group_by(Un_Cell_Id) %>%
+  summarise(Class1_Count = sum(Class1),
+            Class2_Count = sum(Class2),
+            Class3_Count = sum(Class3),
+            Class4_Count = sum(Class4),
+            Class5_Count = sum(Class5),
+            Total_Junctions = sum(Class1_Count, Class2_Count, Class3_Count, Class4_Count, Class5_Count),
+            Perc_Class1 = as.numeric(Class1_Count/Total_Junctions * 100),
+            Perc_Class2 = as.numeric(Class2_Count/Total_Junctions * 100),
+            Perc_Class3 = as.numeric(Class3_Count/Total_Junctions * 100),
+            Perc_Class4 = as.numeric(Class4_Count/Total_Junctions * 100),
+            Perc_Class5 = as.numeric(Class5_Count/Total_Junctions * 100))
+
+JunctionDF4$Perc_Class1 <- format(round(JunctionDF4$Perc_Class1, 2), nsmall = 2)
+JunctionDF4$Perc_Class2 <- format(round(JunctionDF4$Perc_Class2, 2), nsmall = 2)
+JunctionDF4$Perc_Class3 <- format(round(JunctionDF4$Perc_Class3, 2), nsmall = 2)
+JunctionDF4$Perc_Class4 <- format(round(JunctionDF4$Perc_Class4, 2), nsmall = 2)
+JunctionDF4$Perc_Class5 <- format(round(JunctionDF4$Perc_Class5, 2), nsmall = 2)
+
+rm(JunctionDF, JunctionDF3)
+
+#Attach Junction Info
+FinalDF <- DF %>%
+  left_join(JunctionDF4)
+
+rm(JunctionDF4, DF)
+```
+
+DF cleanup (Thresholds to be calibrated on experimental data)
+```{r}
+ECPT_Data <- FinalDF[FinalDF$Cell_Area<= 55000,]
+ECPT_Data <- ECPT_Data[ECPT_Data$Nu_Area<= 5000,]
+ECPT_Data <- ECPT_Data[ECPT_Data$Total_Junctions <=10 & ECPT_Data$Total_Junctions > 2,]
+```
+
+Normalise Intensity Data 
+```{r}
+###DNA Norm###
+DNANorm <- left_join(ECPT_Data, (Normalise(ECPT_Data, ECPT_Data$DNA_IntI, Experiment, Cell_Type))) %>%
+  select(NormFact) %>%
+  collect()
+ECPT_Data$DNANorm<-DNANorm$NormFact
+ECPT_Data$DNA_IntI_Norm <- (ECPT_Data$DNA_IntI*ECPT_Data$DNANorm)
+rm(DNANorm)
+ECPT_Data$DNANorm<-NULL
+###
+
+###nu_NCH Norm###
+NCHNorm <- left_join(ECPT_Data, (Normalise(ECPT_Data, ECPT_Data$Nu_NCH_IntI, Experiment, Cell_Type))) %>%
+  select(NormFact) %>%
+  collect()
+ECPT_Data$NCHNorm<-NCHNorm$NormFact
+ECPT_Data$NCH_IntI_Norm <- (ECPT_Data$Nu_NCH_IntI*ECPT_Data$NCHNorm)
+rm(NCHNorm)
+ECPT_Data$NCHNorm<-NULL
+###
+
+###Nu_HEST Norm###
+HESTNorm <- left_join(ECPT_Data, (Normalise(ECPT_Data, ECPT_Data$Nu_HEST_IntI, Experiment, Cell_Type))) %>%
+  select(NormFact) %>%
+  collect()
+ECPT_Data$HESTNorm<-HESTNorm$NormFact
+ECPT_Data$HEST_IntI_Norm <- (ECPT_Data$Nu_HEST_IntI*ECPT_Data$HESTNorm)
+rm(HESTNorm)
+ECPT_Data$HESTNorm<-NULL
+
+###Cy_NCH Norm###
+CNCHNorm <- left_join(ECPT_Data_NoDAPT, (Normalise(ECPT_Data_NoDAPT, ECPT_Data_NoDAPT$Cy_NCH_IntI_Mean, Experiment, Cell_Type))) %>%
+  select(NormFact) %>%
+  collect()
+ECPT_Data_NoDAPT$CNCHNorm<-CNCHNorm$NormFact
+ECPT_Data_NoDAPT$CNCH_IntI_Norm <- (ECPT_Data_NoDAPT$Cy_NCH_IntI_Mean*ECPT_Data_NoDAPT$CNCHNorm)
+rm(CNCHNorm)
+ECPT_Data$CNCHNorm<-NULL
+```
+
+Assign cell cycle labels (Thresholds to be calibrated by inspection of DNA Intensity density distributions)
+```{r}
+ECPT_Data <- ECPT_Data %>%
+    mutate(Cell_Cycle = ifelse(ECPT_Data$DNA_IntI_Norm <= 1200, "G0/G1", 
+                                       ifelse(ECPT_Data$DNA_IntI_Norm > 1200 & ECPT_Data$DNA_IntI_Norm <= 1700, "S","G2/M")))
+
+ECPT_Data <- ECPT_Data %>%
+  mutate(Cell_Cycle = ifelse(ECPT_Data$Dividing == 'positive', "LM", .$Cell_Cycle))
+```
+
+```{r}
+#J categories reassignemnt in correct order
+ECPT_Data$PJ0 <- ECPT_Data$Perc_J5
+ECPT_Data$PJ1 <- ECPT_Data$Perc_J1
+ECPT_Data$PJ2 <- ECPT_Data$Perc_J3
+ECPT_Data$PJ3 <- ECPT_Data$Perc_J2
+ECPT_Data$PJ4 <- ECPT_Data$Perc_J4
+ECPT_Data$PJ5 <- ECPT_Data$Perc_J0
+
+ECPT_Data$Perc_J0<-ECPT_Data$Perc_J1<-ECPT_Data$Perc_J2<-ECPT_Data$Perc_J3<-ECPT_Data$Perc_J4<-ECPT_Data$Perc_J5<- NULL
+######
+```
+
+```{r}
+dbDisconnect(CONNEX)
+```
