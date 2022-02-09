@@ -1,3 +1,4 @@
+setBatchMode(true); //Start batch mode
 #@ File (label = "Input directory", style = "directory") input
 #@ File (label = "Output directory", style = "directory") output
 #@ String (choices={"Columbus", "Harmony", "CPInput"}, style="radioButtonHorizontal") source
@@ -6,7 +7,7 @@
 // -----------------------------------------------------------
 // GLOBAL VARIABLES
 // -----------------------------------------------------------
-var VERSION = 1.1;
+var VERSION = 1.3.2;
 /*
 VERSION 1.1: 31/05/2020
   Fix file naming management bug. Fix CPInput management.
@@ -744,3 +745,4 @@ function GetCPInputNames(filename)
 
 // **************************************************************
 // **************************************************************
+setBatchMode(false); //End batch mode
