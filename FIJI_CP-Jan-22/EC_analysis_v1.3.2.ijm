@@ -7,7 +7,7 @@ setBatchMode(true); //Start batch mode
 // -----------------------------------------------------------
 // GLOBAL VARIABLES
 // -----------------------------------------------------------
-var VERSION = 1.3.2;
+var VERSION = 1.32;
 /*
 VERSION 1.1: 31/05/2020
   Fix file naming management bug. Fix CPInput management.
