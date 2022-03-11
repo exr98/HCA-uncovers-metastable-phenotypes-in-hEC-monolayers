@@ -87,7 +87,7 @@ if (processing == "WekaProcessing")
 	run("Trainable Weka Segmentation", "open=&inputFilename");	
     // Load the model
     InfoDialog("Loading model. This could take some time...\n(timeout=1min)");
-    selectWindow("Trainable Weka Segmentation v3.3.0");
+    selectWindow("Trainable Weka Segmentation v3.3.1");
 	call("trainableSegmentation.Weka_Segmentation.loadClassifier", model);
 	waitedSeconds = 0;
 	loggedInfo = "";
@@ -156,7 +156,7 @@ if (processing == "WekaProcessing")
 function ApplyWekaModel(inpufolder, imagename, outfolder)
 {
 	WriteToLog(" processing image: " + availableImages[i]);
-	selectWindow("Trainable Weka Segmentation v3.3.0");
+	selectWindow("Trainable Weka Segmentation v3.3.1");
 	call("trainableSegmentation.Weka_Segmentation.applyClassifier", inpufolder , imagename, "showResults=true", "storeResults=false", "probabilityMaps=true", "");
 	close();
     outputFilename = outfolder + File.separator + imagename;
@@ -690,7 +690,7 @@ function segmentResultsJunct(input)
 	//run("Trainable Weka Segmentation");
 	// wait for the plugin to load
 	//wait(3000);
-	//selectWindow("Trainable Weka Segmentation v3.3.0");
+	//selectWindow("Trainable Weka Segmentation v3.3.1");
 	//call("trainableSegmentation.Weka_Segmentation.loadClassifier", "/Volumes/LO KCL/Vinod Patel/Snap/Vessels-Matrix.model");
 	
 	for (i = 0; i < list.length; i++) 
@@ -699,7 +699,7 @@ function segmentResultsJunct(input)
 			//processFolder(input + File.separator + list[i]);
 		if(endsWith(list[i], suffix))		
 		//Weka segmentation
-		selectWindow("Trainable Weka Segmentation v3.3.0");
+		selectWindow("Trainable Weka Segmentation v3.3.1");
 		call("trainableSegmentation.Weka_Segmentation.applyClassifier", output , list[i] , "showResults=true", "storeResults=false", "probabilityMaps=true", "");
 		name_wo_suf = File.nameWithoutExtension;
 		close();		
