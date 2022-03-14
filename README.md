@@ -9,7 +9,7 @@ This repository contains the scripts used in the paper ["High content Image Anal
 - **"Shiny App V4"** contains the raw data .csv file and R scripts to reproduce the Shiny Application for interactive data selection
  used to subset the data 
 
- To see the shiny application in action, go [here](https://errin.shinyapps.io/ECPT_Shiny_App/).
+ To see the shiny application in action, go [here]( https://errin.shinyapps.io/Shiny_V4_2/).
 
  **Within the "R-Analysis-Jan-22" folder:**
 
