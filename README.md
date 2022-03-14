@@ -6,8 +6,8 @@ This repository contains the scripts used in the paper ["High content Image Anal
 1) All macros (FIJI/ImageJ) for image pre processing and Weka segmentation.
 2) The cell profiler pipeline used to carry out endothelial cell characterisation
 
-- **"Shiny App V1.2"** contains the raw data .csv file and R scripts to reproduce the Shiny Application for interactive data selection
- used to subset the data after tSNE clustering
+- **"Shiny App V4"** contains the raw data .csv file and R scripts to reproduce the Shiny Application for interactive data selection
+ used to subset the data 
 
  To see the shiny application in action, go [here](https://errin.shinyapps.io/ECPT_Shiny_App/).
 
@@ -55,7 +55,7 @@ For a detailed description and step-by-step walk through of carrying out analysi
 
 ## Shiny App
 
-The shiny app is available to view in browser from [here](https://errin.shinyapps.io/ECPT_Shiny_App/). The following sections outline how to view the code and deploy the shiny application from within R studio.
+The shiny app is available to view in browser from [here](https://errin.shinyapps.io/Shiny_V4_2/). The following sections outline how to view the code and deploy the shiny application from within R studio.
 
 ### Requirements:
 1. Install [R](https://www.r-project.org/) and [R studio](https://rstudio.com/products/rstudio/download/)
